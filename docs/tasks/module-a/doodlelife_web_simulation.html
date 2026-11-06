@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DoodleLife Web Simulation - High Quality UI</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+    
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-doodle {
+      font-family: 'Patrick Hand', cursive, sans-serif;
+    }
+    .doodle-border-lg {
+      border: 2.5px solid #18181b;
+      box-shadow: 5px 5px 0px #18181b;
+      border-radius: 18px;
+    }
+    .doodle-border-md {
+      border: 2px solid #18181b;
+      box-shadow: 4px 4px 0px #18181b;
+      border-radius: 16px;
+    }
+    .doodle-card-depth {
+      border: 2.5px solid #18181b;
+      box-shadow: 4.5px 4.5px 0px #18181b;
+      border-radius: 18px;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .doodle-card-depth:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6.5px 6.5px 0px #18181b;
+    }
+    .doodle-btn {
+      border: 2px solid #18181b;
+      box-shadow: 3px 3px 0px #18181b;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .doodle-btn:hover {
+      transform: translate(-1.5px, -1.5px);
+      box-shadow: 4.5px 4.5px 0px #18181b;
+    }
+    .doodle-btn:active {
+      transform: translate(1.5px, 1.5px);
+      box-shadow: 0.5px 0.5px 0px #18181b;
+    }
+    .nav-link-active {
+      background-color: #18181b;
+      color: #ffffff;
+      box-shadow: 2px 2px 0px rgba(0,0,0,0.25);
+    }
+    .nav-link-inactive {
+      color: #52525b;
+    }
+    .nav-link-inactive:hover {
+      background-color: #f4f4f5;
+      color: #18181b;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-zinc-900 flex flex-col w-screen h-screen overflow-hidden select-none text-zinc-900">
+
+  <!-- ========================================================================= -->
+  <!-- 1. BROWSER WINDOW CHROME TITLEBAR (42px) - FIXED URL BAR POSITION         -->
+  <!-- ========================================================================= -->
+  <div id="browser-window-header" class="h-[42px] bg-zinc-100 border-b-2 border-zinc-800 px-4 flex items-center justify-between flex-shrink-0 relative">
+    <!-- Left: Traffic Lights & Fixed Width Browser Tab -->
+    <div class="flex items-center gap-2 z-10">
+      <div class="w-3 h-3 rounded-full bg-red-400 border border-zinc-700 cursor-pointer"></div>
+      <div class="w-3 h-3 rounded-full bg-amber-400 border border-zinc-700 cursor-pointer"></div>
+      <div class="w-3 h-3 rounded-full bg-emerald-400 border border-zinc-700 cursor-pointer"></div>
+      
+      <!-- Browser Tab Indicator (Khóa chiều rộng max-w-[210px] để không xô lệch) -->
+      <div class="ml-3 px-3.5 py-1.5 bg-white border-2 border-zinc-800 rounded-t-lg font-bold text-xs flex items-center justify-between gap-2 -mb-2 z-10 shadow-sm w-[210px]">
+        <div class="flex items-center gap-2 truncate">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+          <span id="browser-tab-title" class="truncate">DoodleLife - Giới thiệu</span>
+        </div>
+        <span class="text-zinc-400 text-xs hover:text-black cursor-pointer flex-shrink-0">✕</span>
+      </div>
+    </div>
+
+    <!-- Centered URL Bar: CỐ ĐỊNH 100% Ở CHÍNH GIỮA (Absolute Centered, không bao giờ di chuyển) -->
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm pointer-events-auto z-10">
+      <div class="w-full bg-white border border-zinc-300 rounded-xl px-4 py-1.5 text-xs text-zinc-700 flex items-center justify-center shadow-inner">
+        <span class="text-zinc-800 font-semibold text-xs tracking-normal select-text" id="browser-url">https://doodlelife.app</span>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="text-xs font-bold text-zinc-500 flex items-center gap-1.5 z-10">
+      <span>Desktop 1440 × 900</span>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. APPLICATION NAVBAR (56px)                                              -->
+  <!-- ========================================================================= -->
+  <header id="app-navbar" class="h-[56px] bg-white border-b-2 border-zinc-800 px-6 flex items-center justify-between flex-shrink-0 z-20">
+    <!-- Left: Brand Logo & Navigation Links -->
+    <div class="flex items-center gap-8">
+      <!-- Logo: Icon bút chì đặc trưng của DoodleLife -->
+      <div class="flex items-center gap-2.5 cursor-pointer" onclick="navigateToSection('landing')">
+        <div class="w-8 h-8 rounded-xl bg-amber-200 border-2 border-zinc-900 flex items-center justify-center font-black text-base shadow-[2px_2px_0px_#000]">
+          ✏️
+        </div>
+        <span class="text-xl font-black font-doodle tracking-wide text-zinc-900">DoodleLife</span>
+      </div>
+
+      <!-- Main Navigation Tabs (Padding tăng nhẹ, bo tròn góc tinh tế, khoảng cách chữ thoáng) -->
+      <nav class="flex items-center gap-2 text-sm font-bold">
+        <button id="nav-btn-landing" onclick="navigateToSection('landing')" class="px-4 py-2 rounded-xl nav-link-active transition tracking-normal">
+          Giới thiệu
+        </button>
+        <button id="nav-btn-checkin" onclick="navigateToSection('checkin')" class="px-4 py-2 rounded-xl nav-link-inactive transition tracking-normal">
+          Ghi chép
+        </button>
+        <button id="nav-btn-timeline" onclick="navigateToSection('timeline')" class="px-4 py-2 rounded-xl nav-link-inactive transition tracking-normal">
+          Hành trình
+        </button>
+        <button id="nav-btn-recap" onclick="navigateToSection('recap')" class="px-4 py-2 rounded-xl nav-link-inactive transition tracking-normal">
+          Memory Recap
+        </button>
+        <button id="nav-btn-stickers" onclick="navigateToSection('stickers')" class="px-4 py-2 rounded-xl nav-link-inactive transition tracking-normal">
+          Kho Sticker
+        </button>
+      </nav>
+    </div>
+
+    <!-- Right: User Information & Action Badges -->
+    <div class="flex items-center gap-4">
+      <div class="text-right hidden md:block">
+        <div class="text-xs font-bold text-zinc-900">Bùi Phạm Chí Nhân</div>
+        <div class="text-[11px] text-zinc-500 font-medium">Asia/Ho_Chi_Minh (UTC+7)</div>
+      </div>
+
+      <!-- Quota Counter Pill -->
+      <div onclick="toggleModal('modal-quota')" class="px-3.5 py-1.5 rounded-xl bg-amber-100 border border-zinc-800 text-xs font-extrabold cursor-pointer hover:bg-amber-200 transition shadow-sm" title="Bấm để xem hạn mức tạo ảnh">
+        Quota: <span class="text-amber-900" id="quota-display">4/5 lượt</span>
+      </div>
+
+      <!-- User Avatar -->
+      <div class="w-8 h-8 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+        N
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 3. MAIN WORKSPACE CONTENT CONTAINER (ZERO-SCROLL: 100vh)                  -->
+  <!-- ========================================================================= -->
+  <main id="app-main-content" class="flex-1 bg-[#faf9f6] p-4 lg:p-6 overflow-hidden flex flex-col justify-center relative">
+
+    <!-- ======================================================================= -->
+    <!-- SECTION A: LANDING PAGE (GIỚI THIỆU SẢN PHẨM & ONBOARDING)              -->
+    <!-- ======================================================================= -->
+    <section id="section-landing" class="section-container h-full max-w-5xl mx-auto w-full flex flex-col justify-between py-2">
+      
+      <!-- Hero Top Section (Slogan Đời Thường, Bắt Tai, Rất "Người") -->
+      <div class="text-center space-y-3 pt-2">
+        <div class="inline-block px-4 py-1.5 rounded-full bg-amber-100 border-2 border-zinc-900 text-xs font-black text-zinc-900 uppercase tracking-widest shadow-sm">
+          DOODLELIFE — NHẬT KÝ TRỰC QUAN TÍCH HỢP AI
+        </div>
+        <h1 class="text-4xl lg:text-5xl font-black font-doodle text-zinc-900 tracking-[0.01em] leading-tight max-w-3xl mx-auto">
+          Little Moments - Little Doodles
+        </h1>
+        <p class="text-sm lg:text-base text-zinc-600 max-w-2xl mx-auto font-medium leading-relaxed tracking-normal">
+          Từ những đoạn ghi chép ngắn, DoodleLife tự động tạo sticker hoạt hình doodle và sắp xếp trên dòng thời gian tương tác, giúp việc viết nhật ký trở nên sinh động, riêng tư và dễ duy trì mỗi ngày.
+        </p>
+      </div>
+
+      <!-- Feature Grid: 3 Cột Card có ĐỘ SÂU (DEPTH) nổi bật như nút CTA -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-auto">
+        <!-- Feature 1 -->
+        <div class="bg-white doodle-card-depth p-6 space-y-3 cursor-pointer">
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+            ⚡
+          </div>
+          <h3 class="text-base lg:text-lg font-black text-zinc-900 tracking-tight">Check-in Siêu Tốc &lt; 60s</h3>
+          <p class="text-xs lg:text-sm text-zinc-600 leading-relaxed font-medium">
+            Nhập 15–300 ký tự cảm xúc. Tự động gắn tag buổi (Sáng, Trưa, Tối) và cảm xúc mà không gây áp lực hội chứng "trang giấy trắng".
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="bg-white doodle-card-depth p-6 space-y-3 cursor-pointer">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+            🎨
+          </div>
+          <h3 class="text-base lg:text-lg font-black text-zinc-900 tracking-tight">Cloudflare AI Stickers</h3>
+          <p class="text-xs lg:text-sm text-zinc-600 leading-relaxed font-medium">
+            Mô hình Diffusion chuẩn hóa phong cách hoạt hình viền trắng die-cut dày dặn, màu sắc pastel ấm áp lưu vào bộ sưu tập cá nhân.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="bg-white doodle-card-depth p-6 space-y-3 cursor-pointer">
+          <div class="w-12 h-12 rounded-2xl bg-purple-100 border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
+            🏆
+          </div>
+          <h3 class="text-base lg:text-lg font-black text-zinc-900 tracking-tight">Memory Recap 9:16 Story</h3>
+          <p class="text-xs lg:text-sm text-zinc-600 leading-relaxed font-medium">
+            Tự động tổng hợp cột mốc 3 ngày, 7 ngày, 30 ngày. Xuất ảnh Story 1080×1920 chất lượng cao chia sẻ 1-chạm lên mạng xã hội.
+          </p>
+        </div>
+      </div>
+
+      <!-- Bottom Hero CTA Bar -->
+      <div class="bg-white doodle-card-depth p-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="flex -space-x-2">
+            <img src="sample_stickers/c01-01.jpg" class="w-11 h-11 rounded-full border-2 border-zinc-900 object-cover shadow-sm" />
+            <img src="sample_stickers/c01-05.jpg" class="w-11 h-11 rounded-full border-2 border-zinc-900 object-cover shadow-sm" />
+            <img src="sample_stickers/c01-08.jpg" class="w-11 h-11 rounded-full border-2 border-zinc-900 object-cover shadow-sm" />
+          </div>
+          <div>
+            <div class="text-sm font-black text-zinc-900">Sẵn sàng lưu giữ kỷ niệm hôm nay?</div>
+            <div class="text-xs text-zinc-500 font-medium">Mỗi ngày được cấp 5 lượt tạo ảnh AI miễn phí</div>
+          </div>
+        </div>
+
+        <button onclick="navigateToSection('checkin')" class="px-6 py-3 bg-zinc-900 text-white doodle-btn rounded-xl font-black text-sm flex items-center gap-2">
+          <span>Bắt đầu Ghi chép ngay</span>
+          <span>➔</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- SECTION B: GHI CHÉP (DEDICATED QUICK CHECK-IN SCREEN)                   -->
+    <!-- ======================================================================= -->
+    <section id="section-checkin" class="section-container hidden h-full max-w-4xl mx-auto w-full flex flex-col justify-between py-2">
+      
+      <!-- Greeting Header -->
+      <div class="text-center space-y-1">
+        <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Thứ Sáu, 06 Tháng 11, 2026</span>
+        <h2 class="text-3xl lg:text-4xl font-black font-doodle text-zinc-900" id="checkin-title">🌙 Chào buổi tối, Nhân!</h2>
+        <p class="text-sm text-zinc-600 font-medium">Khoảnh khắc đáng nhớ nhất trong buổi tối hôm nay của bạn là gì?</p>
+      </div>
+
+      <!-- Main Input Card (Card to, rộng rãi, padding 24px) -->
+      <div class="bg-white doodle-border-lg p-6 space-y-4 shadow-sm">
+        <div class="flex justify-between items-center text-sm">
+          <span class="font-extrabold text-zinc-800">Nhập tâm sự khoảnh khắc ngắn:</span>
+          <span class="text-xs font-mono text-zinc-400 font-bold" id="char-counter">0/300 ký tự</span>
+        </div>
+
+        <!-- Textarea Rộng Rãi -->
+        <textarea id="checkin-input-field" oninput="handleTextCount()" maxlength="300" rows="3" class="w-full p-4 text-sm lg:text-base rounded-xl border-2 border-zinc-800 bg-[#fdfdfd] focus:outline-none focus:bg-white resize-none font-medium" placeholder="Nhập câu ngắn (1 - 300 ký tự)... Ví dụ: Vừa đi dạo mát về, không khí tối nay mát mẻ và sảng khoái thật!"></textarea>
+
+        <!-- Mood Selector & Submit Button -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-zinc-100">
+          <div class="flex items-center gap-2 text-sm">
+            <span class="font-bold text-zinc-700">Tâm trạng:</span>
+            <div class="flex gap-2">
+              <button onclick="selectMoodButton(this)" class="mood-btn px-3 py-1.5 rounded-lg border-2 border-zinc-800 bg-amber-100 font-bold text-xs lg:text-sm">Vui vẻ</button>
+              <button onclick="selectMoodButton(this)" class="mood-btn px-3 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 text-xs lg:text-sm font-medium">Bình yên</button>
+              <button onclick="selectMoodButton(this)" class="mood-btn px-3 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 text-xs lg:text-sm font-medium">Bận rộn</button>
+              <button onclick="selectMoodButton(this)" class="mood-btn px-3 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 text-xs lg:text-sm font-medium">Mệt mỏi</button>
+            </div>
+          </div>
+
+          <button onclick="handleGenerateStickerAction()" class="px-6 py-3 bg-zinc-900 text-white doodle-btn rounded-xl font-bold text-sm flex items-center gap-2">
+            <span>✨ Tạo Sticker Doodle</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Split: Today's Summary & Big CTA Lead to Timeline -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Today's Moment Teaser -->
+        <div class="bg-white doodle-border-md p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3.5">
+            <img src="sample_stickers/c01-08.jpg" class="w-14 h-14 rounded-xl border-2 border-zinc-900 object-cover shadow-sm flex-shrink-0" />
+            <div>
+              <div class="text-sm font-extrabold text-zinc-900">Hôm nay: 2 khoảnh khắc</div>
+              <div class="text-xs text-zinc-500 mt-0.5">12:45 Đạp xe • 21:30 Viết nhật ký đêm</div>
+            </div>
+          </div>
+          <button onclick="navigateToSection('timeline')" class="text-xs font-bold text-zinc-700 hover:text-black underline">
+            Quản lý ➔
+          </button>
+        </div>
+
+        <!-- Big CTA Button Lead to Timeline Screen -->
+        <button onclick="navigateToSection('timeline')" class="bg-amber-200 hover:bg-amber-300 doodle-btn rounded-xl p-4 flex items-center justify-between text-left">
+          <div>
+            <div class="text-sm font-black text-zinc-900 uppercase">Xem Toàn Bộ Hành Trình Timeline</div>
+            <div class="text-xs text-zinc-600 mt-0.5">Trục thời gian kết nối các ngày qua nét vẽ sticker</div>
+          </div>
+          <span class="text-xl font-black text-zinc-900">➔</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- SECTION C: HÀNH TRÌNH TIMELINE (DEDICATED 2-COLUMN ZERO-SCROLL ROAD)     -->
+    <!-- ======================================================================= -->
+    <section id="section-timeline" class="section-container hidden h-full max-w-6xl mx-auto w-full grid grid-cols-12 gap-6 items-stretch py-2">
+      
+      <!-- Left Column: Compact Timeline Vertical Road (Col 7) -->
+      <div class="col-span-12 lg:col-span-7 flex flex-col justify-between space-y-3">
+        <!-- Header -->
+        <div class="flex justify-between items-center pb-2 border-b-2 border-zinc-200 flex-shrink-0">
+          <div>
+            <h2 class="text-xl font-black font-doodle text-zinc-900">Hành Trình Dòng Đời (7 Ngày)</h2>
+            <p class="text-xs text-zinc-500">Các khoảnh khắc tích lũy kết nối qua trục thời gian dọc</p>
+          </div>
+          <button onclick="navigateToSection('checkin')" class="px-4 py-2 bg-zinc-900 text-white doodle-btn rounded-xl text-xs font-bold">
+            + Ghi chép mới
+          </button>
+        </div>
+
+        <!-- Milestone Banner -->
+        <div onclick="navigateToSection('recap')" class="p-3 bg-purple-50 border-2 border-zinc-900 rounded-xl flex justify-between items-center cursor-pointer hover:bg-purple-100 transition shadow-sm flex-shrink-0">
+          <div class="flex items-center gap-2.5 text-xs">
+            <span class="text-xl">🏆</span>
+            <div>
+              <span class="font-black text-sm text-purple-950">Đã tích lũy Mốc 7 Ngày!</span>
+              <span class="text-purple-700 text-xs ml-2">Bấm mở Studio xuất ảnh Story 9:16</span>
+            </div>
+          </div>
+          <span class="text-xs font-bold bg-white px-3 py-1 rounded-lg border border-zinc-900">Mở Recap ➔</span>
+        </div>
+
+        <!-- 4 Days Cards (Căn giữa hoàn hảo trên thanh dọc, không dùng số, tinh tế hiện đại) -->
+        <div class="flex-1 flex flex-col justify-between space-y-2.5 relative pl-8 before:content-[''] before:absolute before:left-[15px] before:top-3 before:bottom-3 before:w-[2px] before:bg-zinc-800 before:border-dashed">
+
+          <!-- Card 1: 06/11 (Hôm nay - Active Green Node căn chính giữa thanh) -->
+          <div class="relative">
+            <div class="absolute -left-[24px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-emerald-500 border-2 border-zinc-900 shadow-sm ring-4 ring-emerald-100 z-10"></div>
+            
+            <div class="bg-white doodle-border-md p-3.5 flex items-center justify-between cursor-pointer hover:border-zinc-900 transition" onclick="selectDayCard('today')">
+              <div class="flex items-center gap-4">
+                <img src="sample_stickers/c01-08.jpg" class="w-16 h-16 rounded-xl border-2 border-zinc-900 object-cover shadow-[2px_2px_0px_#000] flex-shrink-0" />
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-extrabold text-sm text-zinc-900">06/11 (Hôm nay)</span>
+                    <span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded-md">2 sticker</span>
+                  </div>
+                  <div class="text-sm text-zinc-700 font-medium line-clamp-1 mt-0.5">"Viết nhật ký đêm muộn dưới ánh đèn vàng ấm cúng"</div>
+                  <div class="text-xs text-zinc-500 mt-0.5">21:30 Tối • Đang làm đại diện chính</div>
+                </div>
+              </div>
+              <span class="text-xs font-extrabold text-emerald-600 flex-shrink-0">Đang chọn ➔</span>
+            </div>
+          </div>
+
+          <!-- Card 2: 05/11 (Concentric Dot căn chính giữa thanh - không dùng số) -->
+          <div class="relative">
+            <div class="absolute -left-[24px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-zinc-900 shadow-sm z-10 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-zinc-900"></span>
+            </div>
+
+            <div class="bg-white doodle-border-md p-3.5 flex items-center justify-between cursor-pointer hover:bg-zinc-50" onclick="selectDayCard('nov5')">
+              <div class="flex items-center gap-4">
+                <img src="sample_stickers/c01-01.jpg" class="w-16 h-16 rounded-xl border-2 border-zinc-900 object-cover shadow-[2px_2px_0px_#000] flex-shrink-0" />
+                <div>
+                  <span class="font-extrabold text-sm text-zinc-900">05/11/2026</span>
+                  <div class="text-sm text-zinc-700 font-medium line-clamp-1 mt-0.5">"Đạp xe thể thao leo dốc đón nắng sớm"</div>
+                  <div class="text-xs text-zinc-500 mt-0.5">07:30 Sáng • Hào hứng</div>
+                </div>
+              </div>
+              <span class="text-xs text-zinc-400 font-mono">c01-01</span>
+            </div>
+          </div>
+
+          <!-- Card 3: 04/11 (Concentric Dot căn chính giữa thanh - không dùng số) -->
+          <div class="relative">
+            <div class="absolute -left-[24px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-zinc-900 shadow-sm z-10 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-zinc-900"></span>
+            </div>
+
+            <div class="bg-white doodle-border-md p-3.5 flex items-center justify-between cursor-pointer hover:bg-zinc-50" onclick="selectDayCard('nov4')">
+              <div class="flex items-center gap-4">
+                <img src="sample_stickers/c01-05.jpg" class="w-16 h-16 rounded-xl border-2 border-zinc-900 object-cover shadow-[2px_2px_0px_#000] flex-shrink-0" />
+                <div>
+                  <span class="font-extrabold text-sm text-zinc-900">04/11/2026</span>
+                  <div class="text-sm text-zinc-700 font-medium line-clamp-1 mt-0.5">"Mèo lười ngủ say trên ghế sofa buổi chiều"</div>
+                  <div class="text-xs text-zinc-500 mt-0.5">16:00 Chiều • Bình yên</div>
+                </div>
+              </div>
+              <span class="text-xs text-zinc-400 font-mono">c01-05</span>
+            </div>
+          </div>
+
+          <!-- Card 4: 03/11 (Concentric Dot căn chính giữa thanh - không dùng số) -->
+          <div class="relative">
+            <div class="absolute -left-[24px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-zinc-900 shadow-sm z-10 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-zinc-900"></span>
+            </div>
+
+            <div class="bg-white doodle-border-md p-3.5 flex items-center justify-between cursor-pointer hover:bg-zinc-50" onclick="selectDayCard('nov3')">
+              <div class="flex items-center gap-4">
+                <img src="sample_stickers/c01-03.jpg" class="w-16 h-16 rounded-xl border-2 border-zinc-900 object-cover shadow-[2px_2px_0px_#000] flex-shrink-0" />
+                <div>
+                  <span class="font-extrabold text-sm text-zinc-900">03/11/2026</span>
+                  <div class="text-sm text-zinc-700 font-medium line-clamp-1 mt-0.5">"Uống trà ấm nhìn mưa rơi tí tách bên ô cửa sổ"</div>
+                  <div class="text-xs text-zinc-500 mt-0.5">14:15 Chiều • Lắng đọng</div>
+                </div>
+              </div>
+              <span class="text-xs text-zinc-400 font-mono">c01-03</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right Column: Live Day Detail Panel (Col 5) -->
+      <div class="col-span-12 lg:col-span-5 bg-white doodle-border-lg p-5 flex flex-col justify-between">
+        <div class="flex justify-between items-center border-b border-zinc-200 pb-2.5">
+          <span class="text-xs font-extrabold uppercase tracking-wider text-zinc-500" id="detail-panel-heading">Chi tiết ngày 06/11 (Hôm nay)</span>
+          <button onclick="toggleModal('modal-delete')" class="text-xs font-bold text-red-600 hover:underline">Xóa ngày</button>
+        </div>
+
+        <!-- Big Sticker Image Preview (To, rõ ràng 140x140) -->
+        <div class="flex flex-col items-center text-center space-y-2 py-2">
+          <div class="w-36 h-36 rounded-2xl border-2 border-zinc-900 overflow-hidden shadow-[4px_4px_0px_#000] relative bg-amber-50">
+            <img id="detail-panel-img" src="sample_stickers/c01-08.jpg" class="w-full h-full object-cover" />
+            <span class="absolute top-2 right-2 bg-emerald-400 text-[10px] font-black px-2 py-0.5 rounded-full border border-zinc-900 shadow">ĐẠI DIỆN</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-zinc-900" id="detail-panel-title">"Viết nhật ký đêm muộn dưới ánh đèn vàng"</h3>
+            <p class="text-xs text-zinc-500 font-mono mt-0.5">Cloudflare Workers AI • Die-cut 512x512</p>
+          </div>
+        </div>
+
+        <!-- Moments Selector in Selected Day -->
+        <div class="space-y-2 border-t border-dashed border-zinc-200 pt-3">
+          <div class="flex justify-between items-center text-xs font-extrabold">
+            <span>Khoảnh khắc trong ngày:</span>
+            <button onclick="navigateToSection('checkin')" class="text-emerald-700 font-bold hover:underline text-xs">+ Thêm khoảnh khắc</button>
+          </div>
+
+          <div class="p-2.5 rounded-xl border-2 border-zinc-800 bg-amber-50/70 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2.5">
+              <img src="sample_stickers/c01-08.jpg" class="w-9 h-9 rounded-lg border border-zinc-800 object-cover" />
+              <div>
+                <div class="font-bold text-xs">21:30 Tối: Viết nhật ký</div>
+                <div class="text-[11px] text-zinc-500">Đang đại diện Timeline</div>
+              </div>
+            </div>
+            <span class="text-xs font-extrabold text-emerald-600">✓ Chọn</span>
+          </div>
+
+          <div class="p-2.5 rounded-xl border border-zinc-300 hover:border-zinc-800 flex items-center justify-between text-xs cursor-pointer" onclick="updateDetailPanel('sample_stickers/c01-01.jpg', 'Đạp xe thể thao leo dốc')">
+            <div class="flex items-center gap-2.5">
+              <img src="sample_stickers/c01-01.jpg" class="w-9 h-9 rounded-lg border border-zinc-800 object-cover" />
+              <div>
+                <div class="font-bold text-xs">12:45 Trưa: Đạp xe</div>
+                <div class="text-[11px] text-zinc-500">Bấm đặt làm đại diện</div>
+              </div>
+            </div>
+            <button class="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 border border-zinc-400 rounded text-xs font-bold">Đặt</button>
+          </div>
+        </div>
+
+        <button onclick="alert('Đã tải sticker PNG trong suốt 512x512 về máy!')" class="w-full py-2.5 bg-zinc-100 hover:bg-zinc-200 doodle-btn rounded-xl font-bold text-xs">
+          📥 Tải sticker này (PNG trong suốt)
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- SECTION D: MEMORY RECAP STUDIO (ZERO-SCROLL 9:16 EXPORTER)             -->
+    <!-- ======================================================================= -->
+    <section id="section-recap" class="section-container hidden h-full max-w-5xl mx-auto w-full grid grid-cols-12 gap-8 items-center py-2">
+      
+      <!-- Left: 9:16 Poster (Scale vừa vặn ~460px height) -->
+      <div class="col-span-12 md:col-span-5 flex justify-center">
+        <div class="w-[270px] h-[480px] bg-[#fffdfa] border-[3px] border-zinc-900 rounded-2xl p-4 flex flex-col justify-between shadow-[6px_6px_0px_#18181b]">
+          <div class="text-center space-y-0.5">
+            <span class="text-[10px] font-black tracking-widest text-zinc-400 uppercase">DOODLE RECAP</span>
+            <h2 class="text-xl font-black font-doodle text-zinc-900 leading-tight">7 NGÀY HÀNH TRÌNH</h2>
+            <div class="text-[10px] text-zinc-500 font-semibold">31/10/2026 — 06/11/2026</div>
+          </div>
+
+          <!-- 3x3 Grid of 9 Real Cloudflare AI Stickers -->
+          <div class="grid grid-cols-3 gap-1.5 my-auto p-2 bg-white rounded-xl border border-dashed border-zinc-300">
+            <img src="sample_stickers/c01-01.jpg" class="aspect-square rounded-md border-2 border-zinc-900 object-cover shadow-[1px_1px_0px_#000]" />
+            <img src="sample_stickers/c01-02.jpg" class="aspect-square rounded-md border-2 border-zinc-900 object-cover shadow-[1px_1px_0px_#000]" />
+            <img src="sample_stickers/c01-03.jpg" class="aspect-square rounded-md border-2 border-zinc-900 object-cover shadow-[1px_1px_0px_#000]" />
+            <img src="sample_stickers/c01-04.jpg" class="aspect-square rounded-md border-2 border-zinc-900 object-cover shadow-[1px_1px_0px_#000]" />
+            <img src="sample_stickers/c01-05.jpg" class="aspect-square rounded-md border-2 border-zinc-900 object-cover shadow-[1px_1px_0px_#000]" />
+            <img src="sample_stickers/c01-06.jpg" class="aspect-square rounded-md border-2 border-zinc-900 object-cover shadow-[1px_1px_0px_#000]" />
+            <img src="sample_stickers/c01-08.jpg" class="aspect-square rounded-md border-2 border-zinc-900 object-cover shadow-[1px_1px_0px_#000]" />
+            <img src="sample_stickers/c01-09.jpg" class="aspect-square rounded-md border-2 border-zinc-900 object-cover shadow-[1px_1px_0px_#000]" />
+            <img src="sample_stickers/c01-10.jpg" class="aspect-square rounded-md border-2 border-zinc-900 object-cover shadow-[1px_1px_0px_#000]" />
+          </div>
+
+          <div class="pt-2 border-t border-dashed border-zinc-300 flex justify-between items-center text-[10px] text-zinc-500 font-mono">
+            <span>doodlelife.app/@nhan</span>
+            <span class="font-bold text-zinc-900">#DoodleLife</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Export Settings & Controls -->
+      <div class="col-span-12 md:col-span-7 bg-white doodle-border-lg p-6 space-y-4">
+        <div>
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold uppercase">Xuất ảnh 1-chạm</span>
+          <h3 class="text-2xl font-black text-zinc-900 mt-1">Memory Recap Studio (9:16)</h3>
+          <p class="text-sm text-zinc-600 mt-0.5">Tự động kết hợp 9 sticker thật từ Cloudflare AI thành tấm poster chuẩn Story.</p>
+        </div>
+
+        <div class="space-y-3.5 border-y border-zinc-200 py-4 text-sm font-medium">
+          <div class="flex justify-between items-center">
+            <span>Độ phân giải xuất:</span>
+            <span class="font-bold font-mono bg-zinc-100 px-3 py-1 rounded-lg border border-zinc-300">1080 × 1920 px (PNG)</span>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <input type="checkbox" checked id="recap-c1" class="rounded w-4 h-4 cursor-pointer" />
+            <label for="recap-c1" class="cursor-pointer font-medium">Hiển thị trích dẫn nội dung ngắn dưới sticker</label>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <input type="checkbox" checked id="recap-c2" class="rounded w-4 h-4 cursor-pointer" />
+            <label for="recap-c2" class="cursor-pointer font-medium">Đính kèm watermark cá nhân hóa @username</label>
+          </div>
+        </div>
+
+        <div class="space-y-2.5 pt-1">
+          <button onclick="alert('Đã kết xuất và tải thành công ảnh Story PNG 1080x1920!')" class="w-full py-3.5 bg-zinc-900 text-white doodle-btn rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+            📥 TẢI XUỐNG ẢNH STORY (PNG 1080×1920)
+          </button>
+          <button onclick="navigateToSection('timeline')" class="w-full py-2.5 bg-zinc-100 hover:bg-zinc-200 doodle-btn rounded-xl font-bold text-xs text-zinc-700">
+            ← Quay lại Hành trình Timeline
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- SECTION E: KHO STICKER GALLERY (ZERO-SCROLL 2x5 GRID)                   -->
+    <!-- ======================================================================= -->
+    <section id="section-stickers" class="section-container hidden h-full max-w-5xl mx-auto w-full flex flex-col justify-between py-2">
+      
+      <!-- Header & Filter -->
+      <div class="flex justify-between items-center bg-white doodle-border-md p-4">
+        <div>
+          <h3 class="font-black text-base text-zinc-900">KHO STICKER CLOUDFLARE AI (10)</h3>
+          <p class="text-xs text-zinc-500">Tất cả sticker doodle thật do anh Tiến tạo</p>
+        </div>
+        <div class="flex gap-2 text-xs">
+          <button class="px-3 py-1.5 rounded-lg bg-zinc-900 text-white font-bold">Tất cả (10)</button>
+          <button class="px-3 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 font-medium">Sáng</button>
+          <button class="px-3 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 font-medium">Trưa</button>
+          <button class="px-3 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 font-medium">Tối</button>
+        </div>
+      </div>
+
+      <!-- 2 Rows x 5 Columns = 10 Real Stickers (Ô to 96px, padding đều đặn) -->
+      <div class="grid grid-cols-5 gap-4 my-2 flex-1 items-center">
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-01.jpg', 'Đạp xe thể thao leo dốc')">
+          <img src="sample_stickers/c01-01.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Đạp xe leo dốc</div>
+        </div>
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-02.jpg', 'Bữa tối gia đình')">
+          <img src="sample_stickers/c01-02.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Bữa tối gia đình</div>
+        </div>
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-03.jpg', 'Ngắm mưa bên cửa sổ')">
+          <img src="sample_stickers/c01-03.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Ngắm mưa cửa sổ</div>
+        </div>
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-04.jpg', 'Bó hoa tươi sáng')">
+          <img src="sample_stickers/c01-04.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Bó hoa tươi sáng</div>
+        </div>
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-05.jpg', 'Mèo lười ngủ sofa')">
+          <img src="sample_stickers/c01-05.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Mèo ngủ sofa</div>
+        </div>
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-06.jpg', 'Ngắm hoàng hôn đồi')">
+          <img src="sample_stickers/c01-06.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Ngắm hoàng hôn</div>
+        </div>
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-07.jpg', 'Họp nhóm bạn')">
+          <img src="sample_stickers/c01-07.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Họp nhóm bạn</div>
+        </div>
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-08.jpg', 'Viết nhật ký đêm')">
+          <img src="sample_stickers/c01-08.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Viết nhật ký đêm</div>
+        </div>
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-09.jpg', 'Em bé tập đi')">
+          <img src="sample_stickers/c01-09.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Em bé tập đi</div>
+        </div>
+        <div class="bg-white doodle-border-md p-2.5 text-center space-y-1.5 hover:scale-105 transition cursor-pointer shadow-sm" onclick="selectFromStickerGallery('sample_stickers/c01-10.jpg', 'Phố hoa chợ đêm')">
+          <img src="sample_stickers/c01-10.jpg" class="w-20 h-20 mx-auto rounded-xl border-2 border-zinc-900 object-cover" />
+          <div class="text-xs font-bold truncate">Phố hoa chợ đêm</div>
+        </div>
+      </div>
+
+      <!-- Bottom Hint -->
+      <div class="text-center text-xs font-medium text-zinc-600 bg-white doodle-border-md p-2.5">
+        💡 Bấm vào bất kỳ sticker nào để đặt làm ảnh đại diện chính trên Timeline!
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 4. MODALS & POPUPS                                                        -->
+  <!-- ========================================================================= -->
+  <!-- Modal Quota -->
+  <div id="modal-quota" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border-2 border-zinc-900 p-6 space-y-3.5 max-w-sm shadow-[4px_4px_0px_#000] text-center">
+      <div class="w-12 h-12 mx-auto rounded-full bg-amber-100 flex items-center justify-center text-2xl">⚡</div>
+      <h4 class="font-extrabold text-base text-zinc-900">Hạn Mức AI Hôm Nay</h4>
+      <p class="text-xs text-zinc-600">Bạn còn lại <b class="text-emerald-700">4/5 lượt tạo</b> hôm nay. Hạn mức tự động làm mới vào lúc 00:00 (Asia/Ho_Chi_Minh).</p>
+      <button onclick="toggleModal('modal-quota')" class="w-full py-2.5 bg-zinc-900 text-white rounded-xl font-bold text-xs doodle-btn">Đóng</button>
+    </div>
+  </div>
+
+  <!-- Modal Delete Confirmation -->
+  <div id="modal-delete" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border-2 border-zinc-900 p-6 space-y-3.5 max-w-sm shadow-[4px_4px_0px_#000]">
+      <h4 class="font-extrabold text-base text-red-600">Xác nhận xóa ngày 06/11?</h4>
+      <p class="text-xs text-zinc-600">Toàn bộ khoảnh khắc và sticker của ngày này sẽ bị gỡ vĩnh viễn khỏi Timeline.</p>
+      <div class="flex gap-2.5 pt-1">
+        <button onclick="toggleModal('modal-delete')" class="flex-1 py-2 bg-zinc-100 border border-zinc-300 rounded-xl text-xs font-bold">Giữ lại</button>
+        <button onclick="toggleModal('modal-delete'); alert('Đã xóa dữ liệu ngày!');" class="flex-1 py-2 bg-red-600 text-white rounded-xl text-xs font-bold shadow">Xác nhận xóa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. JAVASCRIPT CONTROLLERS (SEMANTIC NAVIGATION & INTERACTIONS)             -->
+  <!-- ========================================================================= -->
+  <script>
+    let userDailyQuota = 4;
+
+    /**
+     * Switch view between semantic sections
+     * @param {string} sectionId - 'landing' | 'checkin' | 'timeline' | 'recap' | 'stickers'
+     */
+    function navigateToSection(sectionId) {
+      // 1. Hide all sections
+      document.querySelectorAll('.section-container').forEach(el => el.classList.add('hidden'));
+
+      // 2. Reset navigation buttons state
+      ['landing', 'checkin', 'timeline', 'recap', 'stickers'].forEach(key => {
+        const btn = document.getElementById('nav-btn-' + key);
+        if (btn) btn.className = 'px-3.5 py-1.5 rounded-lg nav-link-inactive transition';
+      });
+
+      // 3. Show target section
+      const targetSec = document.getElementById('section-' + sectionId);
+      if (targetSec) targetSec.classList.remove('hidden');
+
+      const targetBtn = document.getElementById('nav-btn-' + sectionId);
+      if (targetBtn) targetBtn.className = 'px-3.5 py-1.5 rounded-lg nav-link-active transition';
+
+      // 4. Update browser URL and Tab Title
+      const urlEl = document.getElementById('browser-url');
+      const titleEl = document.getElementById('browser-tab-title');
+
+      const routeMap = {
+        'landing': { url: 'https://doodlelife.app', title: 'DoodleLife - Giới thiệu' },
+        'checkin': { url: 'https://doodlelife.app/checkin', title: 'DoodleLife - Ghi chép' },
+        'timeline': { url: 'https://doodlelife.app/timeline', title: 'DoodleLife - Hành trình Timeline' },
+        'recap': { url: 'https://doodlelife.app/milestones/recap-7days', title: 'DoodleLife - Memory Recap 9:16' },
+        'stickers': { url: 'https://doodlelife.app/stickers', title: 'DoodleLife - Kho Sticker' }
+      };
+
+      if (routeMap[sectionId]) {
+        urlEl.innerText = routeMap[sectionId].url;
+        titleEl.innerText = routeMap[sectionId].title;
+      }
+    }
+
+    /**
+     * Update character counter in check-in textarea
+     */
+    function handleTextCount() {
+      const len = document.getElementById('checkin-input-field').value.length;
+      document.getElementById('char-counter').innerText = `${len}/300 ký tự`;
+    }
+
+    /**
+     * Handle mood button selection
+     */
+    function selectMoodButton(btn) {
+      document.querySelectorAll('.mood-btn').forEach(b => {
+        b.className = 'mood-btn px-3 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 text-xs lg:text-sm font-medium';
+      });
+      btn.className = 'mood-btn px-3 py-1.5 rounded-lg border-2 border-zinc-800 bg-amber-100 font-bold text-xs lg:text-sm';
+    }
+
+    /**
+     * Handle sticker generation from check-in form
+     */
+    function handleGenerateStickerAction() {
+      const text = document.getElementById('checkin-input-field').value.trim();
+      if (!text) {
+        alert('Vui lòng nhập vài dòng tâm sự cho khoảnh khắc này!');
+        return;
+      }
+      userDailyQuota--;
+      document.getElementById('quota-display').innerText = `${userDailyQuota}/5 lượt`;
+      alert(`✨ Cloudflare AI đã tạo thành công sticker cho: "${text}"!`);
+      
+      updateDetailPanel('sample_stickers/c01-08.jpg', text);
+      document.getElementById('checkin-input-field').value = '';
+      handleTextCount();
+      navigateToSection('timeline');
+    }
+
+    /**
+     * Update the right detail panel in timeline screen
+     */
+    function updateDetailPanel(imgSrc, title) {
+      document.getElementById('detail-panel-img').src = imgSrc;
+      document.getElementById('detail-panel-title').innerText = `"${title}"`;
+    }
+
+    /**
+     * Handle timeline day card clicks
+     */
+    function selectDayCard(dayKey) {
+      const heading = document.getElementById('detail-panel-heading');
+      if (dayKey === 'today') {
+        heading.innerText = 'Chi tiết ngày 06/11 (Hôm nay)';
+        updateDetailPanel('sample_stickers/c01-08.jpg', 'Viết nhật ký đêm muộn dưới ánh đèn vàng ấm cúng');
+      } else if (dayKey === 'nov5') {
+        heading.innerText = 'Chi tiết ngày 05/11/2026';
+        updateDetailPanel('sample_stickers/c01-01.jpg', 'Đạp xe thể thao leo dốc đón nắng sớm');
+      } else if (dayKey === 'nov4') {
+        heading.innerText = 'Chi tiết ngày 04/11/2026';
+        updateDetailPanel('sample_stickers/c01-05.jpg', 'Mèo lười ngủ say trên ghế sofa buổi chiều');
+      } else if (dayKey === 'nov3') {
+        heading.innerText = 'Chi tiết ngày 03/11/2026';
+        updateDetailPanel('sample_stickers/c01-03.jpg', 'Uống trà ấm nhìn mưa rơi tí tách bên ô cửa sổ');
+      }
+    }
+
+    /**
+     * Select sticker from gallery to set as primary
+     */
+    function selectFromStickerGallery(imgSrc, title) {
+      updateDetailPanel(imgSrc, title);
+      alert(`Đã chọn sticker "${title}" làm đại diện chính trên Timeline!`);
+      navigateToSection('timeline');
+    }
+
+    /**
+     * Toggle modal popup
+     */
+    function toggleModal(modalId) {
+      const el = document.getElementById(modalId);
+      if (el) el.classList.toggle('hidden');
+    }
+  </script>
+</body>
+</html>
