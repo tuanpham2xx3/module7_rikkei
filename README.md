@@ -1,5 +1,7 @@
 # DoodleLife (Doodly) — AI-Powered Visual Journal
 
+Backend Sprint 1 (B01–B05): xem [hướng dẫn local, migration, API và nghiệm thu](docs/tasks/module-b/SPRINT_1.md).
+
 > **"Little Moments - Little Doodles"**  
 > *Đồ án tốt nghiệp Final Module — Rikkei Academy*
 

@@ -3,9 +3,9 @@ import 'dotenv/config';
 import { ArgumentsHost, Catch, Controller, ExceptionFilter, Get, HttpException, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Response } from 'express';
-import { Database } from './db';
 import { AuthController, AuthService } from './auth';
-import { EntriesService, ImagesController } from './entries';
+import { Database } from './db';
+import { EntriesController, EntriesService, ImagesController } from './entries';
 @Controller('health')
 class HealthController { @Get() health(){return {success:true,data:{status:'ok'}};} }
 @Catch()
@@ -15,7 +15,7 @@ class Errors implements ExceptionFilter {
     host.switchToHttp().getResponse<Response>().status(status).json({success:false,error:{code:error instanceof HttpException ? error.message : 'INTERNAL_ERROR',message:status===500?'Internal server error':(error as Error).message}});
   }
 }
-@Module({controllers:[HealthController,AuthController,ImagesController],providers:[Database,AuthService,EntriesService]})
+@Module({controllers:[HealthController,AuthController,EntriesController,ImagesController],providers:[AuthService,Database,EntriesService]})
 class AppModule {}
 export async function bootstrap(){
   for(const name of ['DATABASE_URL','SUPABASE_URL','SUPABASE_ANON_KEY','SUPABASE_SERVICE_ROLE_KEY','IMAGE_SIGNING_SECRET','PUBLIC_API_URL','CORS_ORIGIN','STORAGE_BUCKET']) if(!process.env[name]) throw new Error(`Missing ${name}`);

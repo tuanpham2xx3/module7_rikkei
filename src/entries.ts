@@ -1,11 +1,63 @@
-import { Controller, Get, Injectable, NotFoundException, Param, ParseUUIDPipe, Res, Query, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Injectable, NotFoundException, Param, ParseUUIDPipe, Post, Req, UseGuards, ConflictException, Res, Query, UnauthorizedException } from '@nestjs/common';
 import { Response } from 'express';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from './db';
+import { AuthRequest, AuthService } from './auth';
+
+export function localDate(now = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+}
+export function validateEntry(body: Record<string, unknown>, now = new Date()) {
+  if (!body || Object.keys(body).some(k => !['content','entry_date','mood','time_of_day'].includes(k))) throw new BadRequestException('INVALID_FIELDS');
+  const content = typeof body.content === 'string' ? body.content.trim() : '';
+  if ([...content].length < 1 || [...content].length > 300) throw new BadRequestException('INVALID_CONTENT');
+  const date = body.entry_date ?? localDate(now);
+  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0,10) !== date || date > localDate(now)) throw new BadRequestException('INVALID_ENTRY_DATE');
+  const mood = body.mood ?? 'neutral';
+  const hour = Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',hourCycle:'h23'}).format(now));
+  const time = body.time_of_day ?? (hour < 6 ? 'night' : hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening');
+  if (!['happy','calm','stressed','tired','neutral','energetic'].includes(mood as string) || !['morning','afternoon','evening','night'].includes(time as string)) throw new BadRequestException('INVALID_METADATA');
+  return { content, date, mood, time };
+}
 @Injectable()
 export class EntriesService {
   constructor(private readonly db: Database) {}
+  async create(owner: string, body: Record<string, unknown>) {
+    const input = validateEntry(body);
+    try {
+      return await this.db.owner(owner, async c => {
+        const entry = (await c.query('INSERT INTO entries(user_id,entry_date,content) VALUES($1,$2,$3) RETURNING id,entry_date::text,content,created_at',[owner,input.date,input.content])).rows[0];
+        const sticker = (await c.query('INSERT INTO stickers(user_id,entry_id,content,mood,time_of_day) VALUES($1,$2,$3,$4,$5) RETURNING id,content,mood,time_of_day,is_primary',[owner,entry.id,input.content,input.mood,input.time])).rows[0];
+        const job = (await c.query('INSERT INTO generation_jobs(user_id,entry_id,sticker_id) VALUES($1,$2,$3) RETURNING id,status,attempt',[owner,entry.id,sticker.id])).rows[0];
+        return { ...entry, primary_sticker: { ...sticker, status: job.status }, job };
+      });
+    } catch (error) {
+      if ((error as {code?:string}).code === '23505') throw new ConflictException('DUPLICATE_ENTRY_FOR_DATE');
+      throw error;
+    }
+  }
+  async list(owner: string) {
+    return this.db.owner(owner, async c => ({ items: (await c.query('SELECT id,entry_date::text,content,created_at FROM entries WHERE user_id=$1 ORDER BY entry_date DESC,id DESC LIMIT 50',[owner])).rows }));
+  }
+  async detail(owner: string, id: string) {
+    return this.db.owner(owner, async c => {
+      const entry = (await c.query('SELECT id,entry_date::text,content,created_at FROM entries WHERE id=$1 AND user_id=$2',[id,owner])).rows[0];
+      if (!entry) throw new NotFoundException('ENTRY_NOT_FOUND');
+      const stickers = (await c.query('SELECT id,content,mood,time_of_day,is_primary,is_fallback,created_at,object_path IS NOT NULL AS has_image FROM stickers WHERE entry_id=$1 AND user_id=$2 ORDER BY created_at,id',[id,owner])).rows.map(s => {
+        const {has_image,...fields}=s; return {...fields,image_url:has_image ? this.imageUrl(owner,s.id) : null};
+      });
+      const job = (await c.query('SELECT id,status,attempt,error_code FROM generation_jobs WHERE entry_id=$1 AND user_id=$2 ORDER BY created_at DESC LIMIT 1',[id,owner])).rows[0] ?? null;
+      return {...entry,stickers,primary_sticker:stickers.find(s=>s.is_primary) ?? null,job};
+    });
+  }
+  async remove(owner: string,id: string) {
+    return this.db.owner(owner,async c=> {
+      if (!(await c.query('DELETE FROM entries WHERE id=$1 AND user_id=$2 RETURNING id',[id,owner])).rowCount) throw new NotFoundException('ENTRY_NOT_FOUND');
+      // FK cascades invalidate jobs/metadata atomically. Proxy checks metadata on every image read.
+      return {message:'Xóa mục nhật ký thành công.'};
+    });
+  }
   signature(owner:string,id:string,expiry:string) {
     return createHmac('sha256',process.env.IMAGE_SIGNING_SECRET!).update(`${owner}:${id}:${expiry}`).digest('hex');
   }
@@ -23,6 +75,15 @@ export class EntriesService {
     if(error || !data) throw new NotFoundException('IMAGE_NOT_FOUND');
     return {buffer:Buffer.from(await data.arrayBuffer()),type:meta.mime_type};
   }
+}
+@UseGuards(AuthService)
+@Controller('entries')
+export class EntriesController {
+  constructor(private readonly entries: EntriesService) {}
+  @Post() async create(@Req() req:AuthRequest,@Body() body:Record<string,unknown>) {return {success:true,data:await this.entries.create(req.owner,body)};}
+  @Get() async list(@Req() req:AuthRequest) {return {success:true,data:await this.entries.list(req.owner)};}
+  @Get(':id') async detail(@Req() req:AuthRequest,@Param('id',new ParseUUIDPipe()) id:string) {return {success:true,data:await this.entries.detail(req.owner,id)};}
+  @Delete(':id') async remove(@Req() req:AuthRequest,@Param('id',new ParseUUIDPipe()) id:string) {return {success:true,...await this.entries.remove(req.owner,id)};}
 }
 @Controller('images')
 export class ImagesController {
