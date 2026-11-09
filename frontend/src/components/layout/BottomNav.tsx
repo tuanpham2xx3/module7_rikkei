@@ -1,52 +1,74 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Compass, PenTool, User } from 'lucide-react';
+import type { ActiveSection } from './AppHeader';
+import { Sparkles, PenTool, Compass, Trophy, Images } from 'lucide-react';
 
-export const BottomNav: React.FC = () => {
+interface BottomNavProps {
+  activeSection: ActiveSection;
+  onNavigate: (section: ActiveSection) => void;
+}
+
+export const BottomNav: React.FC<BottomNavProps> = ({ activeSection, onNavigate }) => {
   return (
-    <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-md bg-white/95 backdrop-blur-md border-2 border-stone-800 rounded-2xl shadow-doodle p-1.5 flex items-center justify-around sm:hidden">
-      <NavLink
-        to="/"
-        end
-        className={({ isActive }) =>
-          `flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all cursor-pointer font-bold text-xs ${
-            isActive
-              ? 'bg-[#fef08a] text-stone-900 border-2 border-stone-800 shadow-doodle-sm -translate-y-0.5'
-              : 'text-stone-600 hover:text-stone-900 border-2 border-transparent'
-          }`
-        }
+    <nav className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-md bg-white/95 backdrop-blur-md border-2 border-zinc-900 rounded-2xl shadow-doodle p-1.5 flex items-center justify-around md:hidden">
+      <button
+        onClick={() => onNavigate('landing')}
+        className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition cursor-pointer font-bold text-[11px] ${
+          activeSection === 'landing'
+            ? 'bg-amber-100 text-zinc-900 border-2 border-zinc-900'
+            : 'text-zinc-600'
+        }`}
       >
-        <Compass className="w-5 h-5" />
-        <span>Hành trình</span>
-      </NavLink>
+        <Sparkles className="w-4 h-4" />
+        <span>Giới thiệu</span>
+      </button>
 
-      <NavLink
-        to="/write"
-        className={({ isActive }) =>
-          `flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all cursor-pointer font-bold text-xs ${
-            isActive
-              ? 'bg-[#fef08a] text-stone-900 border-2 border-stone-800 shadow-doodle-sm -translate-y-0.5'
-              : 'text-stone-600 hover:text-stone-900 border-2 border-transparent'
-          }`
-        }
+      <button
+        onClick={() => onNavigate('checkin')}
+        className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition cursor-pointer font-bold text-[11px] ${
+          activeSection === 'checkin'
+            ? 'bg-amber-100 text-zinc-900 border-2 border-zinc-900'
+            : 'text-zinc-600'
+        }`}
       >
-        <PenTool className="w-5 h-5" />
+        <PenTool className="w-4 h-4" />
         <span>Ghi chép</span>
-      </NavLink>
+      </button>
 
-      <NavLink
-        to="/profile"
-        className={({ isActive }) =>
-          `flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all cursor-pointer font-bold text-xs ${
-            isActive
-              ? 'bg-[#fef08a] text-stone-900 border-2 border-stone-800 shadow-doodle-sm -translate-y-0.5'
-              : 'text-stone-600 hover:text-stone-900 border-2 border-transparent'
-          }`
-        }
+      <button
+        onClick={() => onNavigate('timeline')}
+        className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition cursor-pointer font-bold text-[11px] ${
+          activeSection === 'timeline'
+            ? 'bg-amber-100 text-zinc-900 border-2 border-zinc-900'
+            : 'text-zinc-600'
+        }`}
       >
-        <User className="w-5 h-5" />
-        <span>Hồ sơ</span>
-      </NavLink>
+        <Compass className="w-4 h-4" />
+        <span>Hành trình</span>
+      </button>
+
+      <button
+        onClick={() => onNavigate('recap')}
+        className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition cursor-pointer font-bold text-[11px] ${
+          activeSection === 'recap'
+            ? 'bg-amber-100 text-zinc-900 border-2 border-zinc-900'
+            : 'text-zinc-600'
+        }`}
+      >
+        <Trophy className="w-4 h-4" />
+        <span>Recap</span>
+      </button>
+
+      <button
+        onClick={() => onNavigate('stickers')}
+        className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition cursor-pointer font-bold text-[11px] ${
+          activeSection === 'stickers'
+            ? 'bg-amber-100 text-zinc-900 border-2 border-zinc-900'
+            : 'text-zinc-600'
+        }`}
+      >
+        <Images className="w-4 h-4" />
+        <span>Kho ảnh</span>
+      </button>
     </nav>
   );
 };

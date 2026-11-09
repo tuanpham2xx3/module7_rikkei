@@ -1,76 +1,74 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useState } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
-import { ProtectedRoute } from './components/layout/ProtectedRoute';
-import { AppHeader } from './components/layout/AppHeader';
+import { AppHeader, type ActiveSection } from './components/layout/AppHeader';
 import { BottomNav } from './components/layout/BottomNav';
-import { LoginPage } from './pages/LoginPage';
-import { TimelinePage } from './pages/TimelinePage';
-import { ProfilePage } from './pages/ProfilePage';
-
-// App Shell Layout for Protected Pages
-const MainLayout: React.FC = () => {
-  return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#1c1917]">
-      <AppHeader />
-      <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6">
-        <Outlet />
-      </main>
-      <BottomNav />
-    </div>
-  );
-};
-
-// Write Page Placeholder (To be fully implemented in Task A04)
-const WritePlaceholder: React.FC = () => {
-  return (
-    <div className="doodle-box p-8 bg-white border-2 border-stone-800 text-center max-w-lg mx-auto my-8">
-      <div className="w-16 h-16 rounded-2xl bg-[#fef08a] border-2 border-stone-800 flex items-center justify-center mx-auto mb-4 text-3xl">
-        ✍️
-      </div>
-      <h2 className="font-doodle text-3xl font-bold text-stone-900 mb-2">
-        Khu vực Ghi nhật ký (Task A04)
-      </h2>
-      <p className="text-sm text-stone-600 mb-6">
-        Khung ứng dụng và phiên đăng nhập đã sẵn sàng. Form ghi nhật ký 1–300 ký tự sẽ được triển khai ngay ở Task tiếp theo!
-      </p>
-      <a
-        href="/"
-        className="doodle-btn bg-[#1c1917] text-white py-2.5 px-6 rounded-xl font-bold shadow-doodle"
-      >
-        Quay lại Hành trình
-      </a>
-    </div>
-  );
-};
+import { LandingSection } from './components/sections/LandingSection';
+import { CheckinSection } from './components/sections/CheckinSection';
+import { TimelineSection } from './components/sections/TimelineSection';
+import { RecapSection } from './components/sections/RecapSection';
+import { StickersSection } from './components/sections/StickersSection';
+import { QuotaModal } from './components/modals/QuotaModal';
+import { AuthModal } from './components/modals/AuthModal';
 
 export function App() {
+  const [activeSection, setActiveSection] = useState<ActiveSection>('landing');
+  const [isQuotaOpen, setIsQuotaOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          {/* Public Authentication Route */}
-          <Route path="/login" element={<LoginPage />} />
+    <AuthProvider>
+      <div className="min-h-screen flex flex-col bg-[#faf9f6] text-[#18181b] select-none">
+        {/* Application Navbar */}
+        <AppHeader
+          activeSection={activeSection}
+          onNavigate={(sec) => setActiveSection(sec)}
+          onOpenQuotaModal={() => setIsQuotaOpen(true)}
+          onOpenAuthModal={() => setIsAuthOpen(true)}
+        />
 
-          {/* Protected Application Routes */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <MainLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<TimelinePage />} />
-            <Route path="/timeline" element={<TimelinePage />} />
-            <Route path="/write" element={<WritePlaceholder />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Route>
+        {/* Main Workspace Content */}
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto flex flex-col justify-center relative pb-20 md:pb-6">
+          {activeSection === 'landing' && (
+            <LandingSection onStartWriting={() => setActiveSection('checkin')} />
+          )}
 
-          {/* Catch-all Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+          {activeSection === 'checkin' && (
+            <CheckinSection onGoToTimeline={() => setActiveSection('timeline')} />
+          )}
+
+          {activeSection === 'timeline' && (
+            <TimelineSection
+              onGoToCheckin={() => setActiveSection('checkin')}
+              onGoToRecap={() => setActiveSection('recap')}
+            />
+          )}
+
+          {activeSection === 'recap' && (
+            <RecapSection onBackToTimeline={() => setActiveSection('timeline')} />
+          )}
+
+          {activeSection === 'stickers' && <StickersSection />}
+        </main>
+
+        {/* Bottom Floating Navigation for Mobile */}
+        <BottomNav
+          activeSection={activeSection}
+          onNavigate={(sec) => setActiveSection(sec)}
+        />
+
+        {/* Quota Modal */}
+        <QuotaModal
+          isOpen={isQuotaOpen}
+          onClose={() => setIsQuotaOpen(false)}
+        />
+
+        {/* Auth Modal (Google & Email/Password) */}
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+        />
+      </div>
+    </AuthProvider>
   );
 }
 
