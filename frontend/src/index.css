@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Quicksand', 'Comic Neue', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #FAF9F6;
+  background-image: radial-gradient(#d6d3d1 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Doodle handwritten headings */
+.font-doodle {
+  font-family: 'Patrick Hand', 'Comic Neue', cursive;
+}
+
+/* Neo-brutalism Doodle Card */
+.doodle-box {
+  background: #ffffff;
+  border: 2px solid #1c1917;
+  border-radius: 18px;
+  box-shadow: 3px 3px 0px 0px #1c1917;
+  transition: all 0.15s ease-in-out;
+}
+
+.doodle-box:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px #1c1917;
+}
+
+.doodle-box:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px #1c1917;
+}
+
+/* Doodle button */
+.doodle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  border: 2px solid #1c1917;
+  border-radius: 14px;
+  padding: 0.6rem 1.25rem;
+  box-shadow: 3px 3px 0px 0px #1c1917;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.doodle-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px #1c1917;
+}
+
+.doodle-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px #1c1917;
+}
+
+.doodle-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 2px 2px 0px 0px #1c1917 !important;
+}
+
+/* Pencil sketch pulse */
+@keyframes sketch-wobble {
+  0%, 100% { transform: rotate(-1deg) scale(1); }
+  50% { transform: rotate(1.5deg) scale(1.02); }
+}
+
+.animate-wobble {
+  animation: sketch-wobble 2s infinite ease-in-out;
+}
