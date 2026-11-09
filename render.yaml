@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: doodlelife-api
+    runtime: docker
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: IMAGE_SIGNING_SECRET
+        generateValue: true
+      - key: STORAGE_BUCKET
+        value: stickers
+      - key: PUBLIC_API_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false

@@ -4,3 +4,7 @@ node_modules/
 *.log
 scratch/
 .system_generated/
+dist/
+coverage/
+.env.*
+!.env.example
