@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../contexts/useAuth';
+import { getQuota } from '../../lib/quotaService';
 import { Pencil } from 'lucide-react';
 
 export type ActiveSection = 'landing' | 'checkin' | 'timeline' | 'recap' | 'stickers';
@@ -109,10 +110,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
             <div
               onClick={onOpenQuotaModal}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-100 border border-zinc-800 text-xs font-extrabold cursor-pointer hover:bg-amber-200 transition shadow-sm select-none"
+              className={`px-3.5 py-1.5 rounded-xl border border-zinc-800 text-xs font-extrabold cursor-pointer transition shadow-sm select-none ${
+                getQuota(user?.id || 'user_guest').remaining === 0
+                  ? 'bg-rose-100 hover:bg-rose-200'
+                  : 'bg-amber-100 hover:bg-amber-200'
+              }`}
               title="Bấm để xem hạn mức tạo ảnh"
             >
-              Quota: <span className="text-amber-900">4/5 lượt</span>
+              Quota: <span className={getQuota(user?.id || 'user_guest').remaining === 0 ? "text-rose-900 font-black" : "text-amber-900"}>{getQuota(user?.id || 'user_guest').remaining}/5 lượt</span>
             </div>
 
             <div 
