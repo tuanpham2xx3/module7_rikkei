@@ -1,4 +1,5 @@
 import type { JournalEntry, JournalMood, DayPeriod, CreateJournalInput, CreateJournalResult, JournalDraft } from '../types/journal';
+import { supabase } from './supabaseClient';
 
 const DRAFT_PREFIX = 'doodle_journal_draft_';
 const ENTRIES_PREFIX = 'doodle_journal_entries_';
@@ -9,6 +10,32 @@ export const getDayPeriod = (date: Date = new Date()): DayPeriod => {
   if (hour < 12) return 'morning';
   if (hour < 18) return 'afternoon';
   return 'evening';
+};
+
+const mapMoodToBackend = (mood: JournalMood): string => {
+  switch (mood) {
+    case 'Vui vẻ':
+      return 'happy';
+    case 'Bình yên':
+      return 'calm';
+    case 'Bận rộn':
+      return 'stressed';
+    case 'Mệt mỏi':
+      return 'tired';
+    default:
+      return 'neutral';
+  }
+};
+
+const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 };
 
 export const getJournalDraft = (userId: string): JournalDraft | null => {
@@ -87,15 +114,25 @@ export const createJournalEntry = async (
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 4000);
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'idempotency-key': generateUUID()
+    };
+
+    if (supabase) {
+      const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+    }
+
     const res = await fetch(`${API_URL}/entries`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify({
         content: trimmed,
-        mood: input.mood,
-        period
+        mood: mapMoodToBackend(input.mood),
+        time_of_day: period
       }),
       signal: controller.signal
     }).catch(() => null);
