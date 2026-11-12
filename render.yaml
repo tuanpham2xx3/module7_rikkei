@@ -22,3 +22,26 @@ services:
         sync: false
       - key: CORS_ORIGIN
         sync: false
+  # Enable only after the C03/C04/C06 adapter is included in the build.
+  # Run exactly one worker replica; concurrency below is per process.
+  - type: worker
+    name: doodlelife-worker
+    runtime: docker
+    dockerCommand: npm run worker
+    envVars:
+      - key: WORKER_DATABASE_URL
+        sync: false
+      - key: WORKER_ADAPTER_MODULE
+        sync: false
+      - key: WORKER_CONCURRENCY
+        value: 2
+      - key: WORKER_LEASE_MS
+        value: 60000
+      - key: WORKER_TIMEOUT_MS
+        value: 30000
+      - key: WORKER_POLL_MS
+        value: 2000
+      - key: WORKER_BACKOFF_MS
+        value: 2000
+      - key: WORKER_MAX_JOB_AGE_MS
+        value: 600000

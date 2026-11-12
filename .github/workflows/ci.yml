@@ -29,5 +29,6 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run eval:b06
+      - run: npm run eval:b07
       - run: npm run migrate
       - run: npm run migrate
