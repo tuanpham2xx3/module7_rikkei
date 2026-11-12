@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { EntriesService, localDate, validateEntry } from '../src/entries';
 import { Database } from '../src/db';
@@ -17,11 +17,12 @@ test('Vietnam midnight, Unicode length, trim and invalid dates',()=>{
  for(const body of [{content:''},{content:' '.repeat(5)},{content:'😀'.repeat(301)},{content:'x',entry_date:'2026-02-30'},{content:'x',entry_date:'2999-01-01'},{content:'x',user_id:'spoof'}]) assert.throws(()=>validateEntry(body));
 });
 test('real PostgreSQL schema: owner isolation, uniqueness, cascade, no resurrection',async()=>{
- const db=new PGlite();await db.exec(readFileSync('migrations/001_core.sql','utf8'));await db.exec(readFileSync('migrations/002_b06_idempotency.sql','utf8'));
+ const db=new PGlite();for(const name of readdirSync('migrations').filter(n=>n.endsWith('.sql')).sort())await db.exec(readFileSync('migrations/'+name,'utf8'));
  const ownerA='11111111-1111-4111-8111-111111111111',ownerB='22222222-2222-4222-8222-222222222222';
  const adapter={owner:async(owner:string,action:any)=>db.transaction(async tx=>{
   await tx.query("SELECT set_config('app.user_id',$1,true)",[owner]);
   await tx.query('INSERT INTO users(id) VALUES($1) ON CONFLICT DO NOTHING',[owner]);
+  await tx.query('INSERT INTO profiles(user_id) VALUES($1) ON CONFLICT DO NOTHING',[owner]);
   return action({query:async(sql:string,args:unknown[])=>{const result=await tx.query(sql,args);return {...result,rowCount:result.affectedRows ?? result.rows.length};}});
  })} as unknown as Database;
  const service=new EntriesService(adapter);

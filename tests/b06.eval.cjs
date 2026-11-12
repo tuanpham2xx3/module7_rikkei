@@ -35,6 +35,8 @@ test('B06 acceptance + compatibility eval (real PostgreSQL)',{timeout:90000},asy
   const legacySticker=(await sql.query("INSERT INTO stickers(user_id,entry_id,content,time_of_day) VALUES($1,$2,'legacy','morning') RETURNING id",[legacyOwner,legacy.id])).rows[0];
   await sql.query('INSERT INTO generation_jobs(user_id,entry_id,sticker_id) VALUES($1,$2,$3)',[legacyOwner,legacy.id,legacySticker.id]);
   await sql.query(readFileSync('migrations/002_b06_idempotency.sql','utf8'));
+  await sql.query(readFileSync('migrations/003_b07_worker.sql','utf8'));
+  await sql.query(readFileSync('migrations/004_b08_quota.sql','utf8'));
   await t.test('E01 migration preserves B05 data, list/detail/delete',async()=>{
    assert.equal((await entries.detail(legacyOwner,legacy.id)).content,'legacy');
    assert.equal((await entries.detail(legacyOwner,legacy.id)).job.status,'queued');
@@ -75,7 +77,7 @@ test('B06 acceptance + compatibility eval (real PostgreSQL)',{timeout:90000},asy
    const b=await entries.create(other,body,key);assert.notEqual(b.id,created.id);
    await assert.rejects(()=>jobs.read(other,created.job.id),/JOB_NOT_FOUND/);
    const job=await jobs.read(owner,created.job.id);assert.equal(job.status,'processing');assert.equal(job.progress_percent,null);
-   assert.deepEqual(Object.keys(job).sort(),['id','entry_id','status','attempt','error_code','progress_percent','sticker_url'].sort());
+   assert.deepEqual(Object.keys(job).sort(),['id','entry_id','status','attempt','error_code','progress_percent','sticker_url','can_retry','run_version'].sort());
   });
   await t.test('E07 database rejects duplicate job and cross-entry sticker linkage',async()=>{
    await assert.rejects(()=>sql.query('INSERT INTO generation_jobs(user_id,entry_id,sticker_id) VALUES($1,$2,$3)',[owner,created.id,created.primary_sticker.id]),e=>e.code==='23505');
@@ -132,7 +134,7 @@ test('B06 acceptance + compatibility eval (real PostgreSQL)',{timeout:90000},asy
    const [a,b]=await Promise.all([http.post('/api/v1/entries').set('Authorization','Bearer a').set('Idempotency-Key',k).send(payload),http.post('/api/v1/entries').set('Authorization','Bearer a').set('Idempotency-Key',k).send(payload)]);
    assert.equal(a.status,201);assert.equal(b.status,201);assert.equal(a.body.data.id,b.body.data.id);
    assert.equal(a.body.data.job.id,b.body.data.job.id);assert.equal(a.body.success,true);
-   assert.deepEqual(Object.keys(a.body.data).sort(),['id','entry_date','content','created_at','primary_sticker','job'].sort());
+   assert.deepEqual(Object.keys(a.body.data).sort(),['id','entry_date','content','created_at','primary_sticker','job','quota'].sort());
   });
   await t.test('E13 replay races DELETE without resurrecting or deadlocking',async()=>{
    for(let i=0;i<5;i++){

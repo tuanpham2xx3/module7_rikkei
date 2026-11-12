@@ -95,7 +95,7 @@ test('B07 worker acceptance, crash/race/RLS and B06 compatibility',{timeout:9000
    const active=w.runOnce();await sleep(370);await w.recover();assert.equal((await row(a.job)).status,'processing');await w.stop();await active;assert.equal((await row(a.job)).status,'succeeded');assert.equal(await w.runOnce(),0);await clear();
   });
   await t.test('W13 pending jobs have total deadline, no infinite polling',async()=>{
-   const a=await seed();await db.query("UPDATE generation_jobs SET created_at=now()-interval '1 hour' WHERE id=$1",[a.job]);let calls=0;
+   const a=await seed();await db.query("UPDATE generation_jobs SET run_started_at=now()-interval '1 hour' WHERE id=$1",[a.job]);let calls=0;
    await make({submit:async()=>{calls++;return {kind:'pending',reference:'old'};}}).runOnce();assert.equal(calls,0);assert.equal((await row(a.job)).error_code,'JOB_DEADLINE_EXCEEDED');await clear();
   });
   await t.test('W14 B06 create/replay/job polling compatible after worker migration',async()=>{
@@ -107,7 +107,7 @@ test('B07 worker acceptance, crash/race/RLS and B06 compatibility',{timeout:9000
   });
   await t.test('W15 logs exclude content/prompt/raw errors/object paths and secrets',()=>{
    const output=JSON.stringify(logs);for(const secret of ['secret prompt','private diary','api key','private storage token'])assert.ok(!output.includes(secret));
-   for(const event of logs)assert.ok(Object.keys(event).every(k=>['job_id','status','duration_ms','attempt'].includes(k)));
+   for(const event of logs)assert.ok(Object.keys(event).every(k=>['job_id','status','duration_ms','attempt','run_version','usage'].includes(k)));
   });
   await t.test('W16 crash after persisted reference recovers via lookup and updates attempt history',async()=>{
    const a=await seed();await db.query("UPDATE generation_jobs SET status='processing',phase='dispatching',attempt=1,provider_reference='persisted-ref',lease_token=$2,lease_expires_at=now()-interval '1 second' WHERE id=$1",[a.job,randomUUID()]);
