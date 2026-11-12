@@ -44,7 +44,7 @@ function MainApp() {
         onOpenAuthModal={() => setIsAuthOpen(true)}
       />
 
-      <main className="flex-1 bg-[#faf9f6] p-3 sm:p-4 lg:p-6 overflow-y-auto md:overflow-hidden flex flex-col justify-center relative pb-24 md:pb-6 w-full max-w-full overflow-x-hidden">
+      <main className="flex-1 bg-[#faf9f6] p-3 sm:p-4 lg:p-6 overflow-y-auto md:overflow-hidden flex flex-col justify-center relative pb-28 sm:pb-24 md:pb-6 w-full max-w-full overflow-x-hidden">
         {activeSection === 'landing' && (
           <LandingSection onStartWriting={handleStartWriting} />
         )}

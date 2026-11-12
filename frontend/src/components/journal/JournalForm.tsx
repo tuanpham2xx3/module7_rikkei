@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { AlertCircle, CheckCircle2, Loader2, Sparkles, RotateCcw, Lightbulb } from 'lucide-react';
 import type { JournalEntry, JournalMood } from '../../types/journal';
 import { getJournalDraft, saveJournalDraft, clearJournalDraft, createJournalEntry } from '../../lib/journalService';
@@ -21,6 +21,7 @@ const WRITING_PROMPTS = [
 
 export const JournalForm: React.FC<JournalFormProps> = ({ userId, onSuccess }) => {
   const initialDraft = getJournalDraft(userId);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [content, setContent] = useState(initialDraft?.content || '');
   const [mood, setMood] = useState<JournalMood>(initialDraft?.mood || 'Vui vẻ');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,6 +58,9 @@ export const JournalForm: React.FC<JournalFormProps> = ({ userId, onSuccess }) =
     if (fieldError) setFieldError(null);
     if (networkError) setNetworkError(null);
     saveJournalDraft(userId, { content: nextContent, mood });
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 50);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -180,6 +184,7 @@ export const JournalForm: React.FC<JournalFormProps> = ({ userId, onSuccess }) =
 
         <div>
           <textarea
+            ref={textareaRef}
             id="journal-content-input"
             value={content}
             onChange={handleContentChange}

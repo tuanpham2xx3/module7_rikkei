@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/useAuth';
 import type { TimelineItem } from '../../types/timeline';
 import { fetchTimelineBatch, deleteTimelineEntry, fetchTimelineEntryDetail } from '../../lib/timelineService';
 import { DeleteEntryModal } from '../modals/DeleteEntryModal';
-import { Trophy, ArrowRight, Loader2, Sparkles, Calendar, Tag, ChevronDown, Trash2, CheckCircle2 } from 'lucide-react';
+import { Trophy, ArrowRight, Loader2, Sparkles, Calendar, Tag, ChevronDown, Trash2, CheckCircle2, RotateCcw, AlertCircle } from 'lucide-react';
 
 interface TimelineSectionProps {
   onGoToCheckin: () => void;
@@ -20,6 +20,8 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [initialLoaded, setInitialLoaded] = useState<boolean>(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [reloadTick, setReloadTick] = useState<number>(0);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -46,6 +48,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
     let ignore = false;
     const init = async () => {
       setIsLoading(true);
+      setFetchError(null);
       try {
         const res = await fetchTimelineBatch(userId, null, 6);
         if (!ignore) {
@@ -72,6 +75,10 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
             setSelectedItem(res.items[0]);
           }
         }
+      } catch {
+        if (!ignore) {
+          setFetchError('Không thể tải dữ liệu dòng thời gian. Bấm thử lại để kết nối lại.');
+        }
       } finally {
         if (!ignore) {
           setIsLoading(false);
@@ -84,11 +91,12 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
     return () => {
       ignore = true;
     };
-  }, [userId]);
+  }, [userId, reloadTick]);
 
   const handleLoadMore = async () => {
     if (isLoading || !hasMore || !nextCursor) return;
     setIsLoading(true);
+    setFetchError(null);
     try {
       const res = await fetchTimelineBatch(userId, nextCursor, 6);
       setItems((prev) => {
@@ -103,6 +111,8 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
       });
       setHasMore(res.has_more);
       setNextCursor(res.next_cursor);
+    } catch {
+      setFetchError('Lỗi khi tải thêm khoảnh khắc. Vui lòng bấm thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -164,6 +174,23 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
           </div>
         )}
 
+        {fetchError && (
+          <div className="p-2.5 bg-rose-50 border-2 border-rose-800 rounded-xl flex items-center justify-between text-xs text-rose-900 font-bold animate-fade-in flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+              <span>{fetchError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={items.length === 0 ? () => setReloadTick((t) => t + 1) : handleLoadMore}
+              className="px-2.5 py-1 bg-rose-800 hover:bg-rose-900 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Thử lại</span>
+            </button>
+          </div>
+        )}
+
         <div
           onClick={onGoToRecap}
           className="p-3 bg-purple-50 border-2 border-zinc-900 rounded-xl flex justify-between items-center cursor-pointer hover:bg-purple-100 transition shadow-sm flex-shrink-0"
@@ -186,78 +213,102 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar pr-1 relative space-y-3 min-h-0">
-          <div className="absolute left-6 top-3 bottom-3 w-0.5 border-l-2 border-dashed border-zinc-300 pointer-events-none"></div>
-
-          {items.map((item, idx) => {
-            const isSelected = selectedItem?.id === item.id;
-            const isAlternate = idx % 2 === 1;
-
-            return (
-              <div
-                key={item.id}
-                onClick={() => selectItemWithUrl(item)}
-                className={`relative flex items-center gap-3.5 p-3 rounded-2xl border-2 cursor-pointer transition-all ${
-                  isSelected
-                    ? 'bg-amber-50/90 border-zinc-950 shadow-[4px_4px_0px_#18181b] translate-x-1'
-                    : 'bg-white border-zinc-800 shadow-[2px_2px_0px_#18181b] hover:border-zinc-950 hover:bg-zinc-50'
-                } ${isAlternate ? 'ml-2' : ''}`}
-              >
-                <div className="relative z-10 w-12 h-12 rounded-xl border-2 border-zinc-900 bg-white overflow-hidden shadow-sm flex-shrink-0 flex items-center justify-center">
-                  {item.sticker?.image_url ? (
-                    <img
-                      src={item.sticker.image_url}
-                      alt={item.content}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Sparkles className="w-5 h-5 text-amber-500" />
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0 space-y-0.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-black font-mono text-zinc-900">
-                      {item.entry_date}
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 border border-zinc-300 text-zinc-600">
-                      {item.sticker?.time_of_day || 'hôm nay'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-700 font-semibold truncate">
-                    {item.content}
-                  </p>
-                </div>
+          {initialLoaded && items.length === 0 ? (
+            <div className="bg-white doodle-border-lg p-8 text-center space-y-4 my-auto mt-6">
+              <div className="w-16 h-16 rounded-2xl border-2 border-zinc-900 bg-amber-100 flex items-center justify-center mx-auto shadow-[3px_3px_0px_#18181b]">
+                <Sparkles className="w-8 h-8 text-amber-700" />
               </div>
-            );
-          })}
-
-          {hasMore && (
-            <div className="pt-2 pb-1 text-center">
+              <div className="space-y-1">
+                <h3 className="text-base font-black font-doodle text-zinc-900">Chưa có khoảnh khắc nào trên hành trình</h3>
+                <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                  Hãy bắt đầu ghi lại dòng suy nghĩ đầu tiên trong ngày để nhận ngay sticker doodle độc bản!
+                </p>
+              </div>
               <button
                 type="button"
-                onClick={handleLoadMore}
-                disabled={isLoading}
-                className="px-4 py-2 bg-white hover:bg-zinc-100 border-2 border-zinc-800 text-zinc-900 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-60"
+                onClick={onGoToCheckin}
+                className="px-4 py-2 bg-zinc-900 text-white doodle-btn rounded-xl text-xs font-bold inline-flex items-center gap-2 cursor-pointer hover:bg-zinc-800"
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Đang tải thêm theo lô...</span>
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="w-3.5 h-3.5" />
-                    <span>Tải thêm khoảnh khắc</span>
-                  </>
-                )}
+                <span>Bắt đầu viết ngay</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
-          )}
+          ) : (
+            <>
+              <div className="absolute left-6 top-3 bottom-3 w-0.5 border-l-2 border-dashed border-zinc-300 pointer-events-none"></div>
 
-          {!hasMore && initialLoaded && items.length > 0 && (
-            <div className="text-center text-[11px] font-bold text-zinc-400 py-2">
-              Đã hiển thị toàn bộ {items.length} khoảnh khắc trên dòng thời gian.
-            </div>
+              {items.map((item, idx) => {
+                const isSelected = selectedItem?.id === item.id;
+                const isAlternate = idx % 2 === 1;
+
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => selectItemWithUrl(item)}
+                    className={`relative flex items-center gap-3.5 p-3 rounded-2xl border-2 cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-amber-50/90 border-zinc-950 shadow-[4px_4px_0px_#18181b] translate-x-1'
+                        : 'bg-white border-zinc-800 shadow-[2px_2px_0px_#18181b] hover:border-zinc-950 hover:bg-zinc-50'
+                    } ${isAlternate ? 'ml-2' : ''}`}
+                  >
+                    <div className="relative z-10 w-12 h-12 rounded-xl border-2 border-zinc-900 bg-white overflow-hidden shadow-sm flex-shrink-0 flex items-center justify-center">
+                      {item.sticker?.image_url ? (
+                        <img
+                          src={item.sticker.image_url}
+                          alt={item.content}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Sparkles className="w-5 h-5 text-amber-500" />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0 space-y-0.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-black font-mono text-zinc-900">
+                          {item.entry_date}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 border border-zinc-300 text-zinc-600">
+                          {item.sticker?.time_of_day || 'hôm nay'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-700 font-semibold truncate">
+                        {item.content}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {hasMore && (
+                <div className="pt-2 pb-1 text-center">
+                  <button
+                    type="button"
+                    onClick={handleLoadMore}
+                    disabled={isLoading}
+                    className="px-4 py-2 bg-white hover:bg-zinc-100 border-2 border-zinc-800 text-zinc-900 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-60"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Đang tải thêm theo lô...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-3.5 h-3.5" />
+                        <span>Tải thêm khoảnh khắc</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {!hasMore && initialLoaded && items.length > 0 && (
+                <div className="text-center text-[11px] font-bold text-zinc-400 py-2">
+                  Đã hiển thị toàn bộ {items.length} khoảnh khắc trên dòng thời gian.
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
