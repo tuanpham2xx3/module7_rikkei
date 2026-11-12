@@ -17,7 +17,8 @@
     "eval:b06": "npm run build && node --test tests/b06.eval.cjs",
     "worker": "node dist/worker/main.js",
     "eval:b07": "npm run build && node --test tests/b07.eval.cjs",
-    "eval:b08": "npm run build && node --test tests/b08.eval.cjs"
+    "eval:b08": "npm run build && node --test tests/b08.eval.cjs",
+    "eval:b09": "npm run build && node --test tests/b09.eval.cjs"
   },
   "repository": {
     "type": "git",

@@ -8,6 +8,7 @@ import { AuthRequest, AuthService } from './auth';
 import { localDate } from './time';
 export { localDate } from './time';
 import { readQuota, reserveQuota } from './quota';
+import { parseTimelineQuery, encodeCursor, decodeCursor, uuidPattern, Position } from './timeline';
 export function validateEntry(body: Record<string, unknown>, now = new Date()) {
   if (!body || Object.keys(body).some(k => !['content','entry_date','mood','time_of_day'].includes(k))) throw new BadRequestException('INVALID_FIELDS');
   const content = typeof body.content === 'string' ? body.content.trim() : '';
@@ -88,8 +89,29 @@ export class EntriesService {
       return {entry_id:id,job,quota:reservation.quota};
     });
   }
-  async list(owner: string) {
-    return this.db.owner(owner, async c => ({ items: (await c.query('SELECT id,entry_date::text,content,created_at FROM entries WHERE user_id=$1 ORDER BY entry_date DESC,id DESC LIMIT 50',[owner])).rows }));
+  async list(owner:string,query:Record<string,unknown>={}) {
+    const {limit,cursor}=parseTimelineQuery(query);
+    // Decode signed cursors before touching the DB; legacy UUIDs are resolved under owner scope.
+    let position:Position|undefined=cursor&&!uuidPattern.test(cursor)?decodeCursor(owner,cursor):undefined;
+    return this.db.owner(owner,async c=>{
+      if(cursor&&uuidPattern.test(cursor)){
+        position=(await c.query('SELECT entry_date::text,id FROM entries WHERE id=$1 AND user_id=$2',[cursor,owner])).rows[0];
+        if(!position)throw new BadRequestException('INVALID_CURSOR');
+      }
+      const rows=(await c.query(`SELECT e.id,e.entry_date::text,e.content,e.created_at,
+        s.id AS sticker_id,s.object_path IS NOT NULL AS has_image,s.is_fallback,j.status AS job_status
+        FROM entries e LEFT JOIN stickers s ON s.entry_id=e.id AND s.user_id=e.user_id AND s.is_primary
+        LEFT JOIN LATERAL (SELECT status FROM generation_jobs WHERE entry_id=e.id AND user_id=e.user_id
+          AND sticker_id=s.id ORDER BY created_at DESC,id DESC LIMIT 1) j ON true
+        WHERE e.user_id=$1 AND ($2::date IS NULL OR (e.entry_date,e.id)<($2::date,$3::uuid))
+        ORDER BY e.entry_date DESC,e.id DESC LIMIT $4`,[owner,position?.entry_date??null,position?.id??null,limit+1])).rows;
+      const has_more=rows.length>limit;
+      const items=rows.slice(0,limit).map(row=>({id:row.id,entry_date:row.entry_date,content:row.content,created_at:row.created_at,
+        sticker:row.sticker_id?{id:row.sticker_id,image_url:row.has_image?this.imageUrl(owner,row.sticker_id):null,is_fallback:row.is_fallback}:null,
+        job_status:row.job_status??null}));
+      const last=items.at(-1);
+      return {items,has_more,next_cursor:has_more&&last?encodeCursor(owner,{entry_date:last.entry_date,id:last.id}):null};
+    });
   }
   async detail(owner: string, id: string) {
     return this.db.owner(owner, async c => {
@@ -133,7 +155,7 @@ export class EntriesController {
   constructor(private readonly entries: EntriesService) {}
   @Post() async create(@Req() req:AuthRequest,@Body() body:Record<string,unknown>,@Headers('idempotency-key') key?:string) {return {success:true,data:await this.entries.create(req.owner,body,key)};}
   @Post(':id/retry') async retry(@Req() req:AuthRequest,@Param('id',new ParseUUIDPipe()) id:string,@Headers('idempotency-key') key?:string,@Body() body:Record<string,unknown>={}) {return {success:true,data:await this.entries.retry(req.owner,id,key,body)};}
-  @Get() async list(@Req() req:AuthRequest) {return {success:true,data:await this.entries.list(req.owner)};}
+  @Get() async list(@Req() req:AuthRequest,@Query() query:Record<string,unknown>) {return {success:true,data:await this.entries.list(req.owner,query)};}
   @Get(':id') async detail(@Req() req:AuthRequest,@Param('id',new ParseUUIDPipe()) id:string) {return {success:true,data:await this.entries.detail(req.owner,id)};}
   @Delete(':id') async remove(@Req() req:AuthRequest,@Param('id',new ParseUUIDPipe()) id:string) {return {success:true,...await this.entries.remove(req.owner,id)};}
 }
