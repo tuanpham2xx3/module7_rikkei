@@ -16,6 +16,7 @@ jobs:
         options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: postgresql://doodlelife:ci_only@localhost:5432/doodlelife
+      TEST_DATABASE_URL: postgresql://doodlelife:ci_only@localhost:5432/doodlelife
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,5 +28,6 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm test
+      - run: npm run eval:b06
       - run: npm run migrate
       - run: npm run migrate

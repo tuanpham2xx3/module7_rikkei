@@ -13,7 +13,8 @@
     "lint": "eslint src tests",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "migrate": "node scripts/migrate.cjs"
+    "migrate": "node scripts/migrate.cjs",
+    "eval:b06": "npm run build && node --test tests/b06.eval.cjs"
   },
   "repository": {
     "type": "git",

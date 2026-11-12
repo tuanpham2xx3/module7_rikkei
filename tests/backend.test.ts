@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -16,7 +17,7 @@ test('Vietnam midnight, Unicode length, trim and invalid dates',()=>{
  for(const body of [{content:''},{content:' '.repeat(5)},{content:'😀'.repeat(301)},{content:'x',entry_date:'2026-02-30'},{content:'x',entry_date:'2999-01-01'},{content:'x',user_id:'spoof'}]) assert.throws(()=>validateEntry(body));
 });
 test('real PostgreSQL schema: owner isolation, uniqueness, cascade, no resurrection',async()=>{
- const db=new PGlite();await db.exec(readFileSync('migrations/001_core.sql','utf8'));
+ const db=new PGlite();await db.exec(readFileSync('migrations/001_core.sql','utf8'));await db.exec(readFileSync('migrations/002_b06_idempotency.sql','utf8'));
  const ownerA='11111111-1111-4111-8111-111111111111',ownerB='22222222-2222-4222-8222-222222222222';
  const adapter={owner:async(owner:string,action:any)=>db.transaction(async tx=>{
   await tx.query("SELECT set_config('app.user_id',$1,true)",[owner]);
@@ -24,9 +25,9 @@ test('real PostgreSQL schema: owner isolation, uniqueness, cascade, no resurrect
   return action({query:async(sql:string,args:unknown[])=>{const result=await tx.query(sql,args);return {...result,rowCount:result.affectedRows ?? result.rows.length};}});
  })} as unknown as Database;
  const service=new EntriesService(adapter);
- const entry=await service.create(ownerA,{content:'  Một ngày vui  '});
+ const entry=await service.create(ownerA,{content:'  Một ngày vui  '},randomUUID());
  assert.equal(entry.content,'Một ngày vui');assert.equal(entry.job.status,'queued');
- await assert.rejects(()=>service.create(ownerA,{content:'second'}),/DUPLICATE_ENTRY_FOR_DATE/);
+ await assert.rejects(()=>service.create(ownerA,{content:'second'},randomUUID()),/DUPLICATE_ENTRY_FOR_DATE/);
  assert.equal((await service.list(ownerB)).items.length,0);
  await assert.rejects(()=>service.detail(ownerB,entry.id),/ENTRY_NOT_FOUND/);
  await assert.rejects(()=>service.remove(ownerB,entry.id),/ENTRY_NOT_FOUND/);
