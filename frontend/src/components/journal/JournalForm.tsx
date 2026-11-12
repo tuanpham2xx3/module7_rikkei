@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, CheckCircle2, Loader2, Sparkles, RotateCcw } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Sparkles, RotateCcw, Lightbulb } from 'lucide-react';
 import type { JournalEntry, JournalMood } from '../../types/journal';
 import { getJournalDraft, saveJournalDraft, clearJournalDraft, createJournalEntry } from '../../lib/journalService';
 
@@ -9,6 +9,15 @@ interface JournalFormProps {
 }
 
 const MOODS: JournalMood[] = ['Vui vẻ', 'Bình yên', 'Bận rộn', 'Mệt mỏi'];
+
+const WRITING_PROMPTS = [
+  'Hôm nay mình vừa hoàn thành một việc quan trọng...',
+  'Đi dạo ngắm hoàng hôn, tâm trạng nhẹ nhõm thật...',
+  'Uống tách trà ấm nhìn mưa rơi tí tách ngoài hiên...',
+  'Gặp lại bạn cũ, cùng ôn lại bao kỷ niệm vui...',
+  'Thử nấu món mới và thành công ngoài mong đợi...',
+  'Một ngày bận rộn nhưng gặt hái kết quả xứng đáng...'
+];
 
 export const JournalForm: React.FC<JournalFormProps> = ({ userId, onSuccess }) => {
   const initialDraft = getJournalDraft(userId);
@@ -35,6 +44,19 @@ export const JournalForm: React.FC<JournalFormProps> = ({ userId, onSuccess }) =
   const handleMoodSelect = (selectedMood: JournalMood) => {
     setMood(selectedMood);
     saveJournalDraft(userId, { content, mood: selectedMood });
+  };
+
+  const handleSelectPrompt = (promptText: string) => {
+    let nextContent = '';
+    if (!content.trim()) {
+      nextContent = promptText;
+    } else {
+      nextContent = `${content.trim()} ${promptText}`.slice(0, 300);
+    }
+    setContent(nextContent);
+    if (fieldError) setFieldError(null);
+    if (networkError) setNetworkError(null);
+    saveJournalDraft(userId, { content: nextContent, mood });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,6 +199,28 @@ export const JournalForm: React.FC<JournalFormProps> = ({ userId, onSuccess }) =
               <span>{fieldError}</span>
             </div>
           )}
+
+          {/* Quick writing prompts (AX1) */}
+          <div className="mt-3 pt-3 border-t border-zinc-100 space-y-1.5">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-600">
+              <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+              <span>Chưa biết bắt đầu? Nhấp gợi ý để chèn/nối thêm mà không ghi đè dữ liệu:</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {WRITING_PROMPTS.map((prompt, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => handleSelectPrompt(prompt)}
+                  className="px-2.5 py-1 text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg transition-colors cursor-pointer text-left font-medium active:scale-95 disabled:opacity-50"
+                  title="Nhấp để chèn hoặc nối vào nhật ký"
+                >
+                  ✦ {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-zinc-100">
