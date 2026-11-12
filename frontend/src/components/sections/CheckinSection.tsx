@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/useAuth';
 import { JournalForm } from '../journal/JournalForm';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { StickerProgressCard } from '../stickers/StickerProgressCard';
+import { getStoredActiveJob, saveStoredActiveJob } from '../../lib/jobService';
+import type { GenerationJob } from '../../types/job';
+import type { JournalEntry } from '../../types/journal';
+import { Sparkles, ArrowRight, PlusCircle } from 'lucide-react';
 
 interface CheckinSectionProps {
   onGoToTimeline: () => void;
@@ -9,12 +13,28 @@ interface CheckinSectionProps {
 
 export const CheckinSection: React.FC<CheckinSectionProps> = ({ onGoToTimeline }) => {
   const { user } = useAuth();
+  const userId = user?.id || 'user_guest';
+
+  const [activeJob, setActiveJob] = useState<GenerationJob | null>(() => getStoredActiveJob(userId));
+
+  const handleEntryCreated = (entry: JournalEntry) => {
+    const job: GenerationJob = entry.job || {
+      id: 'job_' + Date.now().toString(36),
+      entry_id: entry.id,
+      status: 'queued',
+      attempt: 1,
+      can_retry: false
+    };
+
+    saveStoredActiveJob(userId, job);
+    setActiveJob(job);
+  };
 
   return (
     <section className="h-full max-w-4xl mx-auto w-full flex flex-col justify-between py-2 space-y-4">
       <div className="text-center space-y-1">
         <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
-          Thứ Ba, 10 Tháng 11, 2026
+          Thứ Tư, 11 Tháng 11, 2026
         </span>
         <h2 className="text-3xl lg:text-4xl font-black font-doodle text-zinc-900">
           🌙 Chào buổi tối, {user?.name || 'Nhân'}!
@@ -24,10 +44,31 @@ export const CheckinSection: React.FC<CheckinSectionProps> = ({ onGoToTimeline }
         </p>
       </div>
 
-      <JournalForm
-        userId={user?.id || 'user_guest'}
-        onSuccess={onGoToTimeline}
-      />
+      {activeJob ? (
+        <div className="space-y-3">
+          <StickerProgressCard
+            job={activeJob}
+            userId={userId}
+            onGoToTimeline={onGoToTimeline}
+            onDismiss={() => setActiveJob(null)}
+          />
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setActiveJob(null)}
+              className="text-xs font-bold text-zinc-600 hover:text-black flex items-center gap-1.5 cursor-pointer underline"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Ghi thêm nhật ký mới</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <JournalForm
+          userId={userId}
+          onSuccess={handleEntryCreated}
+        />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white doodle-border-md p-4 flex items-center justify-between">

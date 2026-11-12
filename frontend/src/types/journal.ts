@@ -1,3 +1,5 @@
+import type { GenerationJob } from './job';
+
 export type JournalMood = 'Vui vẻ' | 'Bình yên' | 'Bận rộn' | 'Mệt mỏi';
 export type DayPeriod = 'morning' | 'afternoon' | 'evening';
 
@@ -12,6 +14,7 @@ export interface JournalEntry {
   updated_at?: string;
   status: 'saved' | 'generating' | 'completed';
   sticker_url?: string;
+  job?: GenerationJob;
 }
 
 export interface CreateJournalInput {
