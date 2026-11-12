@@ -155,3 +155,99 @@ export const fetchTimelineBatch = async (
     next_cursor: nextCursor
   };
 };
+
+export const deleteTimelineEntry = async (
+  userId: string,
+  entryId: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const headers: Record<string, string> = {};
+    if (supabase) {
+      const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+    await fetch(`${API_URL}/entries/${entryId}`, {
+      method: 'DELETE',
+      headers,
+      signal: controller.signal
+    }).catch(() => null);
+
+    clearTimeout(timeoutId);
+
+    const raw = localStorage.getItem(`doodle_journal_entries_${userId}`);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        const filtered = Array.isArray(parsed) ? parsed.filter((it: { id: string }) => it.id !== entryId) : [];
+        localStorage.setItem(`doodle_journal_entries_${userId}`, JSON.stringify(filtered));
+      } catch {
+        // Ignore local parse error
+      }
+    }
+
+    const bmIdx = ALL_BENCHMARK_ITEMS.findIndex((it) => it.id === entryId);
+    if (bmIdx !== -1) {
+      ALL_BENCHMARK_ITEMS.splice(bmIdx, 1);
+    }
+
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Lỗi khi xóa';
+    return { success: false, error: msg };
+  }
+};
+
+export const fetchTimelineEntryDetail = async (
+  userId: string,
+  entryId: string
+): Promise<TimelineItem | null> => {
+  try {
+    const headers: Record<string, string> = {};
+    if (supabase) {
+      const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+    }
+
+    const res = await fetch(`${API_URL}/entries/${entryId}`, {
+      method: 'GET',
+      headers
+    }).catch(() => null);
+
+    if (res && res.ok) {
+      const json = await res.json().catch(() => null);
+      if (json && json.data) {
+        return json.data as TimelineItem;
+      }
+    }
+  } catch {
+    // Fallback to local or benchmark cache
+  }
+
+  const local = getStoredEntries(userId).find((it) => it.id === entryId);
+  if (local) {
+    return {
+      id: local.id,
+      entry_date: local.created_at.slice(0, 10),
+      content: local.content,
+      created_at: local.created_at,
+      job_status: local.status,
+      sticker: {
+        id: `local_sticker_${local.id}`,
+        image_url: local.sticker_url || SAMPLE_STICKER_IMAGES[0],
+        mood: local.mood,
+        time_of_day: local.period
+      }
+    };
+  }
+
+  return ALL_BENCHMARK_ITEMS.find((it) => it.id === entryId) || null;
+};
+

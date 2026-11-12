@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/useAuth';
 import type { TimelineItem } from '../../types/timeline';
-import { fetchTimelineBatch } from '../../lib/timelineService';
-import { Trophy, ArrowRight, Loader2, Sparkles, Calendar, Tag, ChevronDown } from 'lucide-react';
+import { fetchTimelineBatch, deleteTimelineEntry, fetchTimelineEntryDetail } from '../../lib/timelineService';
+import { DeleteEntryModal } from '../modals/DeleteEntryModal';
+import { Trophy, ArrowRight, Loader2, Sparkles, Calendar, Tag, ChevronDown, Trash2, CheckCircle2 } from 'lucide-react';
 
 interface TimelineSectionProps {
   onGoToCheckin: () => void;
@@ -20,6 +21,27 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [initialLoaded, setInitialLoaded] = useState<boolean>(false);
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
+
+  const selectItemWithUrl = (item: TimelineItem | null) => {
+    setSelectedItem(item);
+    try {
+      const url = new URL(window.location.href);
+      if (item) {
+        url.searchParams.set('entry', item.id);
+        localStorage.setItem(`doodle_selected_entry_${userId}`, item.id);
+      } else {
+        url.searchParams.delete('entry');
+        localStorage.removeItem(`doodle_selected_entry_${userId}`);
+      }
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // Ignore URL update errors in non-browser env
+    }
+  };
+
   useEffect(() => {
     let ignore = false;
     const init = async () => {
@@ -28,11 +50,27 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
         const res = await fetchTimelineBatch(userId, null, 6);
         if (!ignore) {
           setItems(res.items);
-          if (res.items.length > 0) {
-            setSelectedItem(res.items[0]);
-          }
           setHasMore(res.has_more);
           setNextCursor(res.next_cursor);
+
+          const searchParams = new URLSearchParams(window.location.search);
+          const deepLinkId = searchParams.get('entry') || localStorage.getItem(`doodle_selected_entry_${userId}`);
+
+          if (deepLinkId) {
+            const found = res.items.find((it) => it.id === deepLinkId);
+            if (found) {
+              setSelectedItem(found);
+            } else {
+              const detail = await fetchTimelineEntryDetail(userId, deepLinkId);
+              if (detail && !ignore) {
+                setSelectedItem(detail);
+              } else if (res.items.length > 0) {
+                setSelectedItem(res.items[0]);
+              }
+            }
+          } else if (res.items.length > 0) {
+            setSelectedItem(res.items[0]);
+          }
         }
       } finally {
         if (!ignore) {
@@ -41,6 +79,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
         }
       }
     };
+
     init();
     return () => {
       ignore = true;
@@ -69,6 +108,31 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    if (!selectedItem || isDeleting) return;
+    setIsDeleting(true);
+
+    try {
+      const deletedId = selectedItem.id;
+      const res = await deleteTimelineEntry(userId, deletedId);
+
+      if (res.success) {
+        setItems((prev) => {
+          const nextItems = prev.filter((it) => it.id !== deletedId);
+          const nextSelection = nextItems.length > 0 ? nextItems[0] : null;
+          selectItemWithUrl(nextSelection);
+          return nextItems;
+        });
+
+        setIsDeleteModalOpen(false);
+        setActionNotice('Đã xóa thành công mục nhật ký và giải phóng bộ nhớ liên kết.');
+        setTimeout(() => setActionNotice(null), 3500);
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <section className="h-full max-w-6xl mx-auto w-full grid grid-cols-12 gap-6 items-stretch py-2 select-none">
       <div className="col-span-12 lg:col-span-7 flex flex-col justify-between space-y-3 h-full overflow-hidden">
@@ -92,6 +156,13 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
             + Ghi chép mới
           </button>
         </div>
+
+        {actionNotice && (
+          <div className="p-2.5 bg-emerald-50 border-2 border-emerald-800 rounded-xl flex items-center gap-2 text-xs text-emerald-900 font-bold animate-fade-in flex-shrink-0">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <span>{actionNotice}</span>
+          </div>
+        )}
 
         <div
           onClick={onGoToRecap}
@@ -124,7 +195,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
             return (
               <div
                 key={item.id}
-                onClick={() => setSelectedItem(item)}
+                onClick={() => selectItemWithUrl(item)}
                 className={`relative flex items-center gap-3.5 p-3 rounded-2xl border-2 cursor-pointer transition-all ${
                   isSelected
                     ? 'bg-amber-50/90 border-zinc-950 shadow-[4px_4px_0px_#18181b] translate-x-1'
@@ -235,9 +306,15 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
             </div>
 
             <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
-              <span className="text-[11px] text-zinc-500 font-medium">
-                Tạo lúc: {new Date(selectedItem.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-              </span>
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="px-3 py-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 rounded-xl font-bold flex items-center gap-1 cursor-pointer transition"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Xóa nhật ký</span>
+              </button>
+
               <button
                 type="button"
                 onClick={onGoToRecap}
@@ -255,6 +332,14 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ onGoToCheckin,
           </div>
         )}
       </div>
+
+      <DeleteEntryModal
+        isOpen={isDeleteModalOpen}
+        item={selectedItem}
+        isDeleting={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onClose={() => setIsDeleteModalOpen(false)}
+      />
     </section>
   );
 };
