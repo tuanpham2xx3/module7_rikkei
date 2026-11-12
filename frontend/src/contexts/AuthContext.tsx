@@ -95,37 +95,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
-      if (isSupabaseConfigured() && supabase) {
-        const { error: sbError } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/`,
-          }
-        });
-        if (sbError) throw sbError;
-        return { success: true };
-      } else {
-        // Mock Google Login fallback for offline/local testing
-        await new Promise((r) => setTimeout(r, 600));
-        const mockProfile: UserProfile = {
-          id: 'user_google_mock_' + Date.now().toString(36),
-          email: 'chinhan.doodle@gmail.com',
-          name: 'Chí Nhân (Google)',
-          avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=chinhan',
-          provider: 'google',
-          created_at: new Date().toISOString(),
-          tier: 'free'
-        };
-        const mockSession: AuthSession = {
-          user: mockProfile,
-          access_token: 'mock_jwt_google_token_' + Math.random().toString(36).substring(2),
-          expires_at: Math.floor(Date.now() / 1000) + 3600 * 24 * 7
-        };
-        setUser(mockProfile);
-        setSession(mockSession);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mockSession));
-        return { success: true };
+      if (!isSupabaseConfigured() || !supabase) {
+        throw new Error('Supabase client is not configured.');
       }
+
+      const { error: sbError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        }
+      });
+      if (sbError) throw sbError;
+      return { success: true };
     } catch (err: any) {
       const msg = err.message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại!';
       setError(msg);

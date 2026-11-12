@@ -1,0 +1,209 @@
+DỰ ÁN: NHẬT KÝ DÒNG ĐỜI DOODLE (LIFE JOURNEY DOODLE CANVAS)
+1. TỔNG QUAN DỰ ÁN & VẤN ĐỀ CỐT LÕI
+1.1. Bối cảnh & Vấn đề Cốt lõi (Problem Statement)
+Thói quen ghi chép nhật ký mang lại giá trị cảm xúc và phản tư cao, tuy nhiên đối tượng người dùng trẻ (Gen Z, Millennials) thường đối mặt với các rào cản lớn:
+
+
+* Hội chứng trang giấy trắng: Áp lực phải viết dài, hành văn chỉnh chu khiến tỷ lệ rời bỏ (churn rate) sau 3 ngày vượt mức 70%.
+* Sự đơn điệu của Mood Tracker: Các công cụ định lượng cảm xúc hiện tại (như Year in Pixels, DailyBean) chủ yếu dựa vào các icon tĩnh hoặc bảng màu đơn sắc, thiếu tính cá nhân hóa và chiều sâu kỷ niệm.
+* Tư liệu phân mảnh: Ảnh chụp hàng ngày trong bộ sưu tập (camera roll) rời rạc, không phản ánh được tinh thần cốt lõi của một ngày bình thường không có sự kiện lớn.
+1.2. Giải pháp Đột phá (Product Vision)
+Life Journey Doodle Canvas (DoodleLife) tái định nghĩa trải nghiệm ghi nhật ký thông qua mô hình thị giác hóa micro-journaling:
+
+
+* Text-to-Doodle Sticker: Biến 1-2 câu ghi chép ngắn thành một sticker doodle đen trắng phong cách hoạt hình ngộ nghĩnh, viền dày (die-cut sticker), tối ưu nhận diện trực quan tức thì.
+* Endless Canvas Paradigm: Thay thế cấu trúc từng trang sách bằng một tấm bảng cuộn vô tận. Các sticker được kết nối tự động bằng đường dẫn uốn lượn, mũi tên, biểu tượng nhỏ, hình thành "bản đồ dòng đời" liền mạch theo dòng thời gian.
+* Cột mốc & Gamification: Tự động gom nhóm thành quả theo chu kỳ 3 ngày, 7 ngày, 30 ngày để người dùng nhìn thấy sự tích lũy của cuộc sống và tạo động lực duy trì chuỗi (streak).
+2. TÍNH NĂNG CỐT LÕI & TRẢI NGHIỆM NGƯỜI DÙNG (USER EXPERIENCE)
+2.1. Check-in Siêu tốc (Quick Prompt Input)
+* Giao diện nhập liệu tối giản với một text field duy nhất, hỗ trợ gợi ý nhanh (e.g., cảm xúc, thời tiết, hoạt động chính).
+* Người dùng chỉ cần nhập văn bản ngắn (15 - 150 ký tự), ví dụ:
+   * "02/11: Đi đánh cầu lông với bạn, đập cầu hụt mấy quả hài hước."
+   * "03/11: Thức dậy muộn, ôm ly cafe cày deadline ngập đầu tới tối."
+* Hỗ trợ chọn nhanh ngày quá khứ nếu người dùng muốn ghi bù nhật ký cho các ngày chưa check-in.
+2.2. AI Doodle Generation Pipeline
+Quy trình chuyển đổi văn bản sang asset đồ họa hoạt động qua 3 bước khép kín:
+
+
+Bước
+	Thành phần
+	Nhiệm vụ kỹ thuật
+	Đầu ra
+	Bước 1
+	LLM Orchestrator (Gemini 1.5 Flash)
+	Phân tích ngữ nghĩa, trích xuất 2-3 thực thể hình ảnh trọng tâm, cảm xúc chính, lọc bớt chi tiết thừa, xuất cấu trúc JSON.
+	JSON schema chứa entities, mood, visual_metaphor
+	Bước 2
+	Image Generation Engine
+	Ghép JSON vào Base Style Prompt chuẩn để tạo ảnh sticker: bold black outline, cute doodle sticker, thick white border, cartoon style, no shading, minimal vector art, white background.
+	Ảnh raster (JPEG/PNG) chứa sticker nền trắng
+	Bước 3
+	Post-processing (Rembg)
+	Tự động bóc tách nền trắng, giữ lại viền sticker (white die-cut border) và nội dung doodle, nén tối ưu dung lượng WebP/PNG.
+	File PNG trong suốt 512x512 px (< 150 KB)
+	2.3. Endless Doodle Canvas (Tấm Bảng Vô Tận)
+* Thuật toán sắp xếp dòng thời gian (Auto-Packing Layout):
+   * Sắp xếp các sticker theo đường trục uốn lượn hình chữ S (S-curve path) hoặc zigzag từ trên xuống dưới hoặc từ trái qua phải.
+   * Tự động tính toán tọa độ (x, y) để tránh chồng lấn (overlap collision) với sticker liền kề.
+* Dynamic Connectors:
+   * Tự động sinh các chi tiết nối giữa sticker ngày $N$ và ngày $N+1$: đường nét đứt (dashed line), mũi tên tay vẽ, chùm sao lấp lánh, nốt nhạc, cụm mây nhỏ.
+* Tương tác trực tiếp (Direct Manipulation):
+   * Hỗ trợ kéo thả (drag-and-drop) tự do, xoay góc (rotation: -15° đến +15°), thay đổi kích thước sticker (scale) theo ý thích cá nhân.
+   * Chế độ Camera mượt mà: Pinch-to-zoom (thu phóng từ 20% đến 200%), pan 2D không giới hạn biên.
+2.4. Chế độ Tổng kết & Viral Share (Milestones)
+* Cột mốc tự động (3 Days / 7 Days / 1 Month):
+   * Khi đạt số lượng sticker tương ứng, hệ thống kích hoạt hiệu ứng vinh danh và tự động đóng khung cụm nhật ký.
+   * Tự động tạo typography doodle ở trung tâm cụm: "3 DAYS OF LIFE", "7-DAY SPRINT", "OCTOBER RECAP".
+* Xuất ảnh 1-Chạm đa nền tảng:
+   * Tỷ lệ 9:16: Tối ưu cho Instagram Story, Facebook Story, TikTok, Threads.
+   * Tỷ lệ 16:9 / 4:3: Tối ưu cho Desktop Wallpaper, máy tính bảng hoặc in ấn.
+   * Watermark cá nhân hóa đính kèm góc dưới: doodlelife.app/@username.
+3. KIẾN TRÚC KỸ THUẬT CHI TIẾT (TECHNICAL ARCHITECTURE)
+3.1. Sơ đồ Khái niệm Hệ thống (System Architecture)
+Hệ thống vận hành theo kiến trúc Client-Server phân tách rõ ràng, tối ưu cho xử lý bất đồng bộ các tác vụ AI tốn thời gian.
+
+
++-------------------------------------------------------------+
+|                      Client Layer                           |
+|       Next.js / React (PWA / Mobile-First)                  |
+|     +-------------------------------------------------+     |
+|     |  Konva.js Engine (react-konva)                  |     |
+|     |  - 60 FPS Viewport Pan/Zoom                     |     |
+|     |  - Interactive Drag, Rotate, Scale              |     |
+|     |  - Client-side Canvas Exporter                  |     |
+|     +-------------------------------------------------+     |
++------------------------------+------------------------------+
+                               | REST / WebSocket
++------------------------------v------------------------------+
+|                      Backend Layer                          |
+|             NestJS Application (TypeScript)                 |
+|     +-------------------------------------------------+     |
+|     |  Auth | Journal Module | Canvas Module          |     |
+|     +-------------------------------------------------+     |
+|     |  BullMQ Producer (Async AI Jobs)                |     |
+|     +-------------------------------------------------+     |
++---------------+------------------------------+--------------+
+                |                              |
+     +----------v----------+        +----------v----------+
+     |     PostgreSQL      |        |     Redis Cache     |
+     | Users, Entries,     |        | Rate Limit, Quotas, |
+     | Sticker Transform   |        | BullMQ Job Queue    |
+     +---------------------+        +----------+----------+
+                                               |
+                                    +----------v----------+
+                                    |   AI Worker Node    |
+                                    | - Gemini 1.5 Flash  |
+                                    | - Image Gen API     |
+                                    | - Rembg Service     |
+                                    +----------+----------+
+                                               |
+                                    +----------v----------+
+                                    |   Cloudflare R2     |
+                                    | (PNG Sticker Store) |
+                                    +---------------------+
+3.2. Frontend: Tương tác Đồ họa Canvas
+* Framework: Next.js (App Router), React, TailwindCSS.
+* Canvas Engine: Konva.js phối hợp react-konva:
+   * Sử dụng kỹ thuật Batch Layering: Chia làm 3 layer (Background Layer, Connector Path Layer, Interactive Sticker Layer) nhằm hạn chế vẽ lại toàn màn hình khi kéo thả.
+   * Xử lý cảm ứng đa điểm (Touch Gestures): Tích hợp thuật toán tính khoảng cách 2 ngón tay cho thao tác pinch-to-zoom mượt mà trên mobile Safari/Chrome.
+   * Xuất ảnh trực tiếp phía client: Sử dụng phương thức stage.toDataURL({ pixelRatio: 2 }) kết hợp Web Workers để không chặn UI thread trong quá trình render độ phân giải cao.
+3.3. Backend & Cơ sở Dữ liệu
+* NestJS Clean Architecture: Phân tách rõ Controllers, Services, Repositories, và Data Transfer Objects (DTOs) với xác thực chặt chẽ qua class-validator.
+* Cơ sở dữ liệu PostgreSQL (Database Schema):
+
+
+-- Bảng người dùng
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    tier VARCHAR(20) DEFAULT 'FREE', -- FREE, PRO
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+
+-- Bảng nhật ký hàng ngày
+CREATE TABLE journal_entries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    entry_date DATE NOT NULL,
+    raw_prompt TEXT NOT NULL,
+    extracted_keywords JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    CONSTRAINT unique_user_date UNIQUE(user_id, entry_date)
+);
+
+
+-- Bảng lưu trữ trạng thái hiển thị sticker trên Canvas
+CREATE TABLE canvas_stickers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entry_id UUID REFERENCES journal_entries(id) ON DELETE CASCADE,
+    image_url TEXT NOT NULL,
+    pos_x FLOAT NOT NULL DEFAULT 0.0,
+    pos_y FLOAT NOT NULL DEFAULT 0.0,
+    rotation FLOAT NOT NULL DEFAULT 0.0,
+    scale FLOAT NOT NULL DEFAULT 1.0,
+    z_index INT NOT NULL DEFAULT 0,
+    connector_type VARCHAR(50) DEFAULT 'DASHED_CURVE',
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+
+-- Bảng mốc tổng kết
+CREATE TABLE canvas_milestones (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(20) NOT NULL, -- '3_DAYS', '7_DAYS', '30_DAYS'
+    summary_title VARCHAR(100),
+    bounding_box JSONB, -- { x, y, width, height }
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+3.4. AI Orchestration & Async Task Processing
+* Quản trị tác vụ bất đồng bộ: Sử dụng BullMQ kết hợp Redis. Khi người dùng bấm tạo sticker, client nhận lại ngay job_id và trạng thái QUEUED qua HTTP 202. Trạng thái hoàn thành được thông báo qua Server-Sent Events (SSE) hoặc polling.
+* LLM Prompt Strategy (Gemini 1.5 Flash):
+   * System Prompt: "You are an expert art director. Extract 1-3 visual objects and emotional tone from user's journal text. Output strict JSON with properties: objects (array of strings), emotion (string), visual_scene (single phrase description)."
+* Image Generation Module:
+   * Input: [visual_scene] + ", bold black outline, cute doodle sticker, thick white border, cartoon style, flat 2D vector, black and white ink, minimalist, isolated on solid white background"
+   * Chạy qua module rembg (triển khai dạng microservice hoặc serverless worker) để loại bỏ nền trắng, đảm bảo sticker trong suốt tuyệt đối.
+* Lưu trữ Asset: Đẩy file PNG đã xử lý lên Cloudflare R2 (S3-compatible API). Cung cấp qua Cloudflare CDN với cơ chế cache vĩnh viễn (Cache-Control: public, max-age=31536000, immutable), tối ưu 100% chi phí truyền tải dữ liệu (zero egress fees).
+4. CHIẾN LƯỢC QUẢN TRỊ CHI PHÍ & PRODUCTION LAUNCH (COST & METRICS)
+4.1. Kiểm soát Chi phí AI (Cost Optimization)
+Biện pháp
+	Cơ chế thực hiện
+	Mục tiêu tiết kiệm
+	Hạn mức tài khoản Free (Quota Limit)
+	Giới hạn 1 lượt tạo sticker mỗi ngày. Cho phép tối đa 2 lần tạo lại (re-roll) trong ngày đó.
+	Giảm chi phí đột biến từ bot và lạm dụng API
+	Prompt Template Caching
+	Lưu hash của các hoạt động phổ biến (như "uống cafe làm việc", "chạy bộ buổi sáng"). Gợi ý sẵn doodle sticker trong kho thư viện chung nếu người dùng đồng ý.
+	Giảm 30% số lượng cuộc gọi API sinh ảnh
+	Model Routing thông minh
+	Sử dụng model Gemini 1.5 Flash với mức giá siêu tối ưu cho bước trích xuất JSON trước khi truyền sang diffusion model.
+	Giảm thiểu tối đa chi phí xử lý ngôn ngữ tự nhiên
+	4.2. Chiến lược Tăng trưởng Người dùng (Growth Loop)
+* Kênh chuyển đổi tự nhiên (Viral Loop):
+   * Canvas tổng kết 7 ngày được cấu hình định dạng dọc 9:16 có độ thẩm mỹ cao, phù hợp thói quen chia sẻ "Sunday Recap" hoặc "Week in Review" của giới trẻ.
+   * Mỗi ảnh chia sẻ đều tích hợp mã QR hoặc URL rút gọn dẫn về trang đăng ký của người dùng đó kèm mã giới thiệu (nhận thêm re-roll miễn phí).
+* Lộ trình triển khai (Go-to-Market Milestones):
+   * Pha Alpha (Tuần 1 - 2): Khởi chạy nội bộ với 20 - 30 người dùng thân thiết. Mục tiêu: Bắt lỗi layout va chạm trên canvas, đo độ ổn định tách nền của rembg.
+   * Pha Beta (Tuần 3 - 5): Mở rộng 200 người dùng theo diện thư mời (Invite-only). Đo lường tỷ lệ duy trì: D1 Retention > 50%, D7 Retention > 25%.
+   * Pha Public Launch (Tuần 6 trở đi): Phát hành sản phẩm công khai trên Product Hunt, Threads, và các cộng đồng Journaling / Notion Việt Nam.
+5. ĐÓNG GÓI DỰ ÁN VÀO CV THEO CHUẨN STAR
+5.1. Thông tin chung
+* Dự án: DoodleLife – AI-Powered Visual Journal & Infinite Canvas
+* Vai trò: Fullstack & AI Product Engineer (Solo Creator / Project Owner)
+* Công nghệ chủ đạo: React, Next.js, Konva.js (react-konva), NestJS, TypeScript, PostgreSQL, Redis (BullMQ), Cloudflare R2, Google Gemini API, Diffusion Model API.
+5.2. Nội dung Chi tiết theo Cấu trúc STAR
+Situation (Bối cảnh)
+* Nhận thấy rào cản lớn khiến hơn 70% người dùng bỏ thói quen viết nhật ký truyền thống là do áp lực viết dài và sự thiếu trực quan của các công cụ mood tracker dạng bảng biểu sẵn có trên thị trường.
+Task (Nhiệm vụ)
+* Độc lập thiết kế, xây dựng và đưa lên Production một nền tảng Web App Mobile-First cho phép biến nhật ký 1-2 câu hằng ngày thành các sticker doodle hoạt hình có phong cách mỹ thuật đồng nhất, tự động sắp xếp liên tục trên một tấm bảng vô tận (Endless Canvas).
+Action (Hành động)
+* AI Pipeline: Thiết kế quy trình xử lý 2 giai đoạn (Gemini 1.5 Flash trích xuất thực thể ngữ nghĩa $\rightarrow$ Diffusion model tạo sticker với prompt template chuẩn hóa $\rightarrow$ Rembg tách nền tự động), đảm bảo phong cách đen trắng đồng nhất 100% và giảm 40% chi phí token nhờ tiền xử lý logic.
+* Canvas Engine: Tích hợp Konva.js để xây dựng engine hiển thị 2D tương tác mượt mà ở tần số quét 60 FPS trên thiết bị di động; triển khai thuật toán tính toán tọa độ tự động (S-curve packing) và hỗ trợ đầy đủ cử chỉ pinch-to-zoom, pan, drag-and-drop.
+* Hệ thống Phía sau (Backend System): Xây dựng hệ thống bằng NestJS tuân theo nguyên lý Clean Architecture; sử dụng Redis kết hợp BullMQ để xử lý hàng đợi tạo ảnh bất đồng bộ, giải quyết triệt để vấn đề nghẽn cổ chai I/O khi người dùng đồng loạt check-in.
+* Tối ưu Chi phí: Lưu trữ sticker trên Cloudflare R2 để loại bỏ hoàn toàn chi phí băng thông truyền tải dữ liệu (zero-egress cost), kết hợp rate limiting nghiêm ngặt dựa trên Redis.
+Result (Kết quả)
+* Hoàn thiện và vận hành hệ thống thực tế trên môi trường production; hệ thống xử lý ổn định hàng ngàn tác vụ tạo ảnh bất đồng bộ với tỷ lệ lỗi dưới 0.5%.
+* Đạt mốc tỷ lệ duy trì Day-7 Retention đạt 32% trong giai đoạn thử nghiệm có kiểm soát (vượt mức trung bình của nhóm ứng dụng lifestyle/journaling).
+* Tính năng xuất ảnh Milestone Story tạo ra vòng lặp lan tỏa tự nhiên, mang lại hơn 40% lượng người dùng mới thông qua nội dung chia sẻ trên Instagram và Threads.

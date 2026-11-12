@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DoodleLife App Interactive Simulation</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap');
+    
+    body {
+      font-family: 'Quicksand', sans-serif;
+    }
+    .font-doodle {
+      font-family: 'Patrick Hand', cursive, sans-serif;
+    }
+    .doodle-box {
+      border: 2.5px solid #18181b;
+      box-shadow: 3.5px 3.5px 0px #18181b;
+      border-radius: 14px;
+    }
+    .doodle-btn {
+      border: 2px solid #18181b;
+      box-shadow: 2.5px 2.5px 0px #18181b;
+      transition: all 0.15s ease;
+    }
+    .doodle-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3.5px 3.5px 0px #18181b;
+    }
+    .doodle-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px #18181b;
+    }
+    .die-cut-sticker {
+      filter: drop-shadow(3px 3px 0px rgba(0,0,0,0.85));
+    }
+    .timeline-curved-line {
+      stroke-dasharray: 6 6;
+      stroke: #71717a;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    /* Hide scrollbars for clean phone mockup */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-zinc-100 text-zinc-900 antialiased p-2 md:p-6 min-h-screen flex flex-col items-center justify-center">
+
+  <!-- Control Toolbar -->
+  <div class="w-full max-w-4xl mb-4 bg-white doodle-box p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+    <div class="flex items-center gap-2">
+      <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="font-bold text-sm tracking-wide">DOODLELIFE APP SIMULATOR</span>
+      <span class="px-2 py-0.5 rounded bg-zinc-100 border border-zinc-300 text-zinc-600">Module A Prototype</span>
+    </div>
+    
+    <div class="flex flex-wrap items-center gap-1.5">
+      <span class="text-zinc-500 font-semibold mr-1">Chuyển nhanh:</span>
+      <button onclick="navigate('screen-login')" class="px-2.5 py-1 rounded-lg doodle-btn bg-white hover:bg-zinc-50 font-bold">1. Đăng nhập</button>
+      <button onclick="navigate('screen-timeline')" class="px-2.5 py-1 rounded-lg doodle-btn bg-amber-200 hover:bg-amber-300 font-bold">2. Timeline dọc</button>
+      <button onclick="openCheckinModal('evening')" class="px-2.5 py-1 rounded-lg doodle-btn bg-emerald-200 hover:bg-emerald-300 font-bold">+ Thêm khoảnh khắc</button>
+      <button onclick="navigate('screen-detail')" class="px-2.5 py-1 rounded-lg doodle-btn bg-sky-200 hover:bg-sky-300 font-bold">3. Chi tiết ngày</button>
+      <button onclick="navigate('screen-recap')" class="px-2.5 py-1 rounded-lg doodle-btn bg-purple-200 hover:bg-purple-300 font-bold">4. Recap 9:16</button>
+      
+      <div class="border-l border-zinc-300 pl-2 flex gap-1">
+        <button onclick="triggerEdgeState('empty')" class="px-2 py-1 rounded doodle-btn bg-zinc-100 text-[11px]" title="Trạng thái trống">📭 Trống</button>
+        <button onclick="triggerEdgeState('quota')" class="px-2 py-1 rounded doodle-btn bg-zinc-100 text-[11px]" title="Hết Quota">🚫 Quota</button>
+        <button onclick="triggerEdgeState('error')" class="px-2 py-1 rounded doodle-btn bg-zinc-100 text-[11px]" title="Lỗi AI / Fallback">⚠️ Fallback</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smartphone Mockup Frame -->
+  <div class="relative w-[375px] h-[780px] bg-white rounded-[40px] border-[5px] border-zinc-900 shadow-[8px_8px_0px_#18181b] overflow-hidden flex flex-col">
+    
+    <!-- Phone Top Notch & Status Bar -->
+    <div class="w-full bg-white pt-2.5 px-6 pb-1 flex justify-between items-center text-[11px] font-bold z-30 select-none border-b border-zinc-100">
+      <span id="device-clock">20:30</span>
+      <div class="w-24 h-4 bg-zinc-900 rounded-full mx-auto -mt-1"></div>
+      <div class="flex items-center gap-1">
+        <span>5G</span>
+        <span>100%</span>
+      </div>
+    </div>
+
+    <!-- MAIN APP SCREENS CONTAINER -->
+    <div class="flex-1 overflow-y-auto no-scrollbar relative bg-[#fafafa]">
+
+      <!-- ================= 1. SCREEN: LOGIN ================= -->
+      <div id="screen-login" class="screen-view p-6 flex flex-col justify-between h-full bg-[#fcfbfa]">
+        <div class="text-center pt-8 space-y-3">
+          <div class="w-20 h-20 mx-auto bg-amber-100 doodle-box flex items-center justify-center text-4xl transform -rotate-3">
+            ✏️
+          </div>
+          <div>
+            <h1 class="text-3xl font-extrabold font-doodle tracking-wide">DoodleLife</h1>
+            <p class="text-xs text-zinc-500 font-medium mt-1">Biến mỗi khoảnh khắc thường nhật thành sticker nét vẽ AI</p>
+          </div>
+          
+          <div class="py-4 flex justify-center gap-3">
+            <span class="p-2 bg-white doodle-box text-xl">☕</span>
+            <span class="p-2 bg-white doodle-box text-xl transform rotate-6">🚲</span>
+            <span class="p-2 bg-white doodle-box text-xl transform -rotate-6">💻</span>
+            <span class="p-2 bg-white doodle-box text-xl">🌙</span>
+          </div>
+        </div>
+
+        <div class="space-y-3 pb-8">
+          <button onclick="loginSuccess()" class="w-full py-3 px-4 bg-white doodle-btn rounded-xl flex items-center justify-center gap-3 font-bold text-sm">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            Tiếp tục với Google
+          </button>
+          <div class="relative flex py-1 items-center">
+            <div class="flex-grow border-t border-zinc-300"></div>
+            <span class="flex-shrink mx-3 text-zinc-400 text-[11px]">hoặc email</span>
+            <div class="flex-grow border-t border-zinc-300"></div>
+          </div>
+          <input type="email" placeholder="nhan@gmail.com" class="w-full px-3 py-2.5 text-xs rounded-xl border-2 border-zinc-800 bg-white focus:outline-none" />
+          <button onclick="loginSuccess()" class="w-full py-2.5 bg-zinc-900 text-white doodle-btn rounded-xl font-bold text-xs">
+            Gửi Magic Link ➔
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 2. SCREEN: TIMELINE (MAIN HOME) ================= -->
+      <div id="screen-timeline" class="screen-view hidden p-4 pb-24">
+        <!-- App Top Bar -->
+        <div class="flex justify-between items-center pb-3 mb-2 border-b-2 border-dashed border-zinc-300">
+          <div>
+            <span class="text-xs text-zinc-500 font-bold">HÀNH TRÌNH CỦA</span>
+            <h2 class="text-base font-extrabold font-doodle">Bùi Phạm Chí Nhân ✏️</h2>
+          </div>
+          <div class="flex items-center gap-1.5 bg-amber-100 border border-zinc-800 px-2 py-1 rounded-full text-[11px] font-bold">
+            ⚡ <span id="quota-badge">Quota: 4/5</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Greeting Banner based on Time of Day -->
+        <div id="timeline-greeting" class="p-3 bg-white doodle-box mb-4 flex justify-between items-center">
+          <div>
+            <div class="text-[11px] text-zinc-500 font-semibold" id="greeting-time">🌙 Buổi tối (20:30)</div>
+            <div class="text-xs font-bold text-zinc-900" id="greeting-text">Tối nay có gì vui kể Doodle nghe nào?</div>
+          </div>
+          <button onclick="openCheckinModal('evening')" class="px-2.5 py-1.5 bg-emerald-300 doodle-btn rounded-lg text-xs font-bold flex items-center gap-1">
+            <span>+</span> Ghi chép
+          </button>
+        </div>
+
+        <!-- Milestone Banner (7 Days) -->
+        <div onclick="navigate('screen-recap')" class="p-2.5 bg-gradient-to-r from-purple-100 to-pink-100 border-2 border-zinc-900 rounded-xl mb-4 flex justify-between items-center cursor-pointer shadow-[2px_2px_0px_#18181b]">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🏆</span>
+            <div>
+              <div class="text-xs font-extrabold text-purple-900">CHÚC MỪNG: MỐC 7 NGÀY!</div>
+              <div class="text-[10px] text-purple-700">Đã tích lũy đủ 7 ngày hành trình</div>
+            </div>
+          </div>
+          <span class="text-xs font-bold bg-white px-2 py-1 rounded-lg border border-purple-800 text-purple-900">Xem Recap ➔</span>
+        </div>
+
+        <!-- VERTICAL TIMELINE ROAD -->
+        <div class="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-3 before:top-4 before:bottom-4 before:w-[3px] before:bg-zinc-800 before:border-dashed">
+
+          <!-- TODAY CLUSTER (06/11) -->
+          <div class="relative group">
+            <!-- Timeline Pin Dot -->
+            <div class="absolute -left-[23px] top-3 w-6 h-6 rounded-full bg-emerald-400 border-2 border-zinc-900 flex items-center justify-center text-[10px] font-black z-10 shadow-[1px_1px_0px_#000]">
+              ✓
+            </div>
+
+            <!-- Day Card Container -->
+            <div class="bg-white doodle-box p-3 space-y-2 cursor-pointer hover:bg-zinc-50 transition" onclick="navigate('screen-detail')">
+              <div class="flex justify-between items-center border-b border-zinc-200 pb-1.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-extrabold text-xs">Hôm nay, 06/11</span>
+                  <span class="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 border border-emerald-400 rounded-full font-bold">2 khoảnh khắc</span>
+                </div>
+                <span class="text-[10px] text-zinc-400 font-mono">Xem chi tiết ➔</span>
+              </div>
+
+              <!-- Primary Sticker & Text Preview -->
+              <div class="flex items-center gap-3 pt-1">
+                <div class="w-14 h-14 bg-amber-50 rounded-xl border-2 border-zinc-900 flex items-center justify-center text-3xl shadow-[2px_2px_0px_#18181b] flex-shrink-0">
+                  ☕
+                </div>
+                <div class="text-xs space-y-1">
+                  <div class="font-bold text-zinc-800">"Nay uống cà phê sáng sảng khoái"</div>
+                  <div class="text-[10px] text-zinc-500 flex gap-2">
+                    <span>☀️ 08:15 Sáng</span>
+                    <span class="text-emerald-600 font-semibold">• Đại diện chính</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Moment Badges of Today -->
+              <div class="flex flex-wrap gap-1.5 pt-1 border-t border-dashed border-zinc-200">
+                <span class="text-[10px] bg-zinc-100 border border-zinc-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  ☕ 08:15 Cà phê sáng
+                </span>
+                <span class="text-[10px] bg-zinc-100 border border-zinc-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  🚲 12:45 Đạp xe trưa
+                </span>
+                <span onclick="event.stopPropagation(); openCheckinModal('evening');" class="text-[10px] bg-emerald-100 border border-emerald-500 text-emerald-800 px-2 py-0.5 rounded-full font-bold hover:bg-emerald-200 cursor-pointer">
+                  + Thêm tối
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- YESTERDAY (05/11) -->
+          <div class="relative">
+            <div class="absolute -left-[23px] top-3 w-6 h-6 rounded-full bg-white border-2 border-zinc-900 flex items-center justify-center text-[10px] font-bold z-10 shadow-[1px_1px_0px_#000]">
+              5
+            </div>
+            <div class="bg-white doodle-box p-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-50">
+              <div class="w-12 h-12 bg-sky-50 rounded-xl border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#18181b] flex-shrink-0">
+                📚
+              </div>
+              <div class="text-xs">
+                <div class="text-[10px] text-zinc-400 font-semibold">05/11/2026</div>
+                <div class="font-bold text-zinc-800">"Ngồi đọc sách ở thư viện cả buổi chiều"</div>
+                <div class="text-[10px] text-zinc-500">🌤️ 15:30 • Bình yên</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAST DAY (04/11) -->
+          <div class="relative">
+            <div class="absolute -left-[23px] top-3 w-6 h-6 rounded-full bg-white border-2 border-zinc-900 flex items-center justify-center text-[10px] font-bold z-10 shadow-[1px_1px_0px_#000]">
+              4
+            </div>
+            <div class="bg-white doodle-box p-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-50">
+              <div class="w-12 h-12 bg-rose-50 rounded-xl border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#18181b] flex-shrink-0">
+                🏃
+              </div>
+              <div class="text-xs">
+                <div class="text-[10px] text-zinc-400 font-semibold">04/11/2026</div>
+                <div class="font-bold text-zinc-800">"Chạy bộ 5km công viên Hoàng Văn Thụ"</div>
+                <div class="text-[10px] text-zinc-500">🌅 06:15 • Hào hứng</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAST DAY (03/11) -->
+          <div class="relative">
+            <div class="absolute -left-[23px] top-3 w-6 h-6 rounded-full bg-white border-2 border-zinc-900 flex items-center justify-center text-[10px] font-bold z-10 shadow-[1px_1px_0px_#000]">
+              3
+            </div>
+            <div class="bg-white doodle-box p-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-50">
+              <div class="w-12 h-12 bg-purple-50 rounded-xl border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#18181b] flex-shrink-0">
+                💻
+              </div>
+              <div class="text-xs">
+                <div class="text-[10px] text-zinc-400 font-semibold">03/11/2026</div>
+                <div class="font-bold text-zinc-800">"Cày xuyên đêm chốt kiến trúc hệ thống"</div>
+                <div class="text-[10px] text-zinc-500">🌙 23:45 • Tập trung</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Floating Add Moment Button (+) -->
+        <button onclick="openCheckinModal('evening')" class="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-zinc-900 text-white doodle-btn flex items-center justify-center text-2xl font-bold shadow-[4px_4px_0px_#000] z-20 hover:scale-105 active:scale-95 transition">
+          +
+        </button>
+      </div>
+
+      <!-- ================= 3. SCREEN: DETAIL OF DAY & MOMENTS ================= -->
+      <div id="screen-detail" class="screen-view hidden p-4 pb-20 space-y-4">
+        <!-- Top Nav -->
+        <div class="flex justify-between items-center border-b border-zinc-200 pb-2">
+          <button onclick="navigate('screen-timeline')" class="text-xs font-bold flex items-center gap-1 px-2 py-1 bg-white doodle-btn rounded-lg">
+            ← Quay lại
+          </button>
+          <span class="text-xs font-extrabold font-doodle text-sm">Chi tiết Ngày 06/11/2026</span>
+          <button onclick="confirmDelete()" class="text-xs font-bold text-red-600 px-2 py-1 border border-red-300 rounded-lg hover:bg-red-50">
+            🗑️ Xóa
+          </button>
+        </div>
+
+        <!-- Large Primary Sticker Preview -->
+        <div class="bg-white doodle-box p-4 flex flex-col items-center text-center space-y-2">
+          <div class="w-32 h-32 bg-amber-50 rounded-2xl border-2 border-zinc-900 flex items-center justify-center text-6xl shadow-[4px_4px_0px_#18181b] relative">
+            <span id="detail-sticker-icon">☕</span>
+            <span class="absolute -top-2 -right-2 bg-emerald-400 text-[9px] font-black px-2 py-0.5 rounded-full border border-zinc-900 shadow">
+              ĐẠI DIỆN CHÍNH
+            </span>
+          </div>
+          <div class="pt-2">
+            <h3 class="font-bold text-sm text-zinc-900" id="detail-sticker-caption">"Nay uống cà phê sáng sảng khoái"</h3>
+            <p class="text-[11px] text-zinc-500 font-mono mt-0.5">Prompt: cute doodle sticker, coffee cup, bold black outline, flat vector</p>
+          </div>
+        </div>
+
+        <!-- Moments List of Today -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-extrabold text-zinc-700">CÁC KHOẢNH KHẮC TRONG NGÀY (2/5):</span>
+            <button onclick="openCheckinModal('evening')" class="text-emerald-700 font-bold text-[11px] hover:underline">+ Thêm mới</button>
+          </div>
+
+          <!-- Moment Item 1 -->
+          <div class="p-3 bg-white border-2 border-zinc-800 rounded-xl flex items-center justify-between shadow-[2px_2px_0px_#000]">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl p-1 bg-amber-50 rounded-lg border border-zinc-800">☕</span>
+              <div class="text-xs">
+                <div class="font-bold">08:15 Sáng (Hào hứng)</div>
+                <div class="text-zinc-600">"Nay uống cà phê sáng sảng khoái"</div>
+              </div>
+            </div>
+            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-1 rounded border border-emerald-400">
+              Đang đại diện
+            </span>
+          </div>
+
+          <!-- Moment Item 2 -->
+          <div class="p-3 bg-white border-2 border-zinc-800 rounded-xl flex items-center justify-between shadow-[2px_2px_0px_#000]">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl p-1 bg-sky-50 rounded-lg border border-zinc-800">🚲</span>
+              <div class="text-xs">
+                <div class="font-bold">12:45 Trưa (Năng động)</div>
+                <div class="text-zinc-600">"Đạp xe xong rồi - làm việc tiếp"</div>
+              </div>
+            </div>
+            <button onclick="setPrimarySticker('🚲', 'Đạp xe xong rồi - làm việc tiếp')" class="text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold px-2 py-1 rounded border border-zinc-400">
+              Đặt làm đại diện
+            </button>
+          </div>
+        </div>
+
+        <button onclick="openCheckinModal('evening')" class="w-full py-2.5 bg-zinc-900 text-white doodle-btn rounded-xl font-bold text-xs flex items-center justify-center gap-2">
+          <span>+</span> Thêm khoảnh khắc cho ngày này
+        </button>
+      </div>
+
+      <!-- ================= 4. SCREEN: RECAP STORY (9:16) ================= -->
+      <div id="screen-recap" class="screen-view hidden p-4 pb-20 flex flex-col items-center">
+        <div class="w-full flex justify-between items-center mb-3">
+          <button onclick="navigate('screen-timeline')" class="text-xs font-bold px-2 py-1 bg-white doodle-btn rounded-lg">← Quay lại</button>
+          <span class="font-extrabold text-xs">MEMORY RECAP (9:16)</span>
+          <span class="text-xs font-mono text-zinc-400">Mốc 7 ngày</span>
+        </div>
+
+        <!-- 9:16 Story Canvas Preview (1080x1920 scaled down) -->
+        <div id="story-export-frame" class="w-[280px] h-[497px] bg-[#fffdf9] border-[3px] border-zinc-900 rounded-2xl p-4 flex flex-col justify-between shadow-[6px_6px_0px_#18181b] relative overflow-hidden">
+          
+          <!-- Background Doodle Pattern Watermark -->
+          <div class="absolute -right-6 -bottom-6 text-zinc-100 text-9xl font-black select-none pointer-events-none">✨</div>
+
+          <!-- Story Header -->
+          <div class="text-center space-y-1 relative z-10">
+            <div class="text-[9px] font-black tracking-widest text-zinc-400 uppercase">DOODLELIFE MEMORY RECAP</div>
+            <h2 class="text-xl font-black font-doodle text-zinc-900 leading-tight">7 NGÀY HÀNH TRÌNH</h2>
+            <div class="text-[10px] text-zinc-500 font-semibold">31/10/2026 ➔ 06/11/2026</div>
+          </div>
+
+          <!-- 3x3 Grid of 9 Hand-drawn Stickers -->
+          <div class="grid grid-cols-3 gap-2 my-auto relative z-10 p-2 bg-white/70 rounded-xl border border-dashed border-zinc-300">
+            <div class="aspect-square bg-amber-50 rounded-lg border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">☕</div>
+            <div class="aspect-square bg-sky-50 rounded-lg border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">🚲</div>
+            <div class="aspect-square bg-rose-50 rounded-lg border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">🏃</div>
+            <div class="aspect-square bg-emerald-50 rounded-lg border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">📚</div>
+            <div class="aspect-square bg-purple-50 rounded-lg border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">💻</div>
+            <div class="aspect-square bg-amber-100 rounded-lg border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">🍕</div>
+            <div class="aspect-square bg-indigo-50 rounded-lg border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">🌙</div>
+            <div class="aspect-square bg-pink-50 rounded-lg border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">🎵</div>
+            <div class="aspect-square bg-teal-50 rounded-lg border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">🐱</div>
+          </div>
+
+          <!-- Story Footer & Watermark -->
+          <div class="text-center pt-2 border-t-2 border-dashed border-zinc-300 relative z-10 flex justify-between items-center text-[10px] text-zinc-500 font-mono">
+            <span>doodlelife.app/@nhan</span>
+            <span class="font-bold">#DoodleLife</span>
+          </div>
+        </div>
+
+        <!-- Export Buttons -->
+        <div class="w-full max-w-[280px] space-y-2 mt-4">
+          <button onclick="simulateExportPNG()" class="w-full py-2.5 bg-zinc-900 text-white doodle-btn rounded-xl font-bold text-xs flex items-center justify-center gap-2">
+            📥 Xuất ảnh Story 9:16 (PNG 1080x1920)
+          </button>
+          <div class="flex items-center justify-between text-[11px] text-zinc-500 px-1">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" checked class="rounded" /> Hiện chú thích chữ
+            </label>
+            <span class="text-emerald-600 font-bold">✓ Đã tối ưu CORS</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= MODAL: QUICK CHECK-IN (FORM NHẬP LIỆU) ================= -->
+    <div id="modal-checkin" class="absolute inset-0 bg-black/50 z-40 hidden flex items-end justify-center transition-opacity">
+      <div class="w-full bg-white rounded-t-3xl border-t-[3px] border-zinc-900 p-5 space-y-3 animate-in slide-in-from-bottom duration-200">
+        <div class="flex justify-between items-center pb-2 border-b border-zinc-200">
+          <div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold" id="form-time-badge">🌙 Buổi tối</span>
+            <h3 class="font-bold text-sm text-zinc-900 mt-1">Ghi lại khoảnh khắc hôm nay</h3>
+          </div>
+          <button onclick="closeCheckinModal()" class="w-7 h-7 rounded-full bg-zinc-100 border border-zinc-400 text-zinc-600 font-bold text-xs flex items-center justify-center">✕</button>
+        </div>
+
+        <!-- Textarea 1-300 chars -->
+        <div class="relative">
+          <textarea id="moment-input" oninput="updateCharCount()" maxlength="300" rows="3" class="w-full p-2.5 text-xs rounded-xl border-2 border-zinc-800 bg-[#fafafa] focus:outline-none focus:bg-white resize-none" placeholder="Ví dụ: Vừa hoàn thành xong bản prototype cho đồ án..."></textarea>
+          <div class="absolute right-2 bottom-2 text-[10px] text-zinc-400 font-mono font-bold" id="char-counter">0/300 ký tự</div>
+        </div>
+
+        <!-- Mood Selector -->
+        <div class="space-y-1">
+          <div class="text-[11px] font-bold text-zinc-700">Cảm xúc của khoảnh khắc này:</div>
+          <div class="grid grid-cols-4 gap-1.5" id="mood-picker">
+            <button onclick="pickMood(this, 'happy')" class="mood-btn py-1.5 px-2 rounded-lg border-2 border-zinc-800 bg-amber-100 font-bold text-xs flex items-center justify-center gap-1 shadow-[1px_1px_0px_#000]">😊 Vui</button>
+            <button onclick="pickMood(this, 'calm')" class="mood-btn py-1.5 px-2 rounded-lg border border-zinc-300 bg-white text-xs flex items-center justify-center gap-1">☕ Chill</button>
+            <button onclick="pickMood(this, 'stressed')" class="mood-btn py-1.5 px-2 rounded-lg border border-zinc-300 bg-white text-xs flex items-center justify-center gap-1">⚡ Bận</button>
+            <button onclick="pickMood(this, 'tired')" class="mood-btn py-1.5 px-2 rounded-lg border border-zinc-300 bg-white text-xs flex items-center justify-center gap-1">😴 Mệt</button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button onclick="submitMoment()" class="w-full py-3 bg-zinc-900 text-white doodle-btn rounded-xl font-bold text-xs flex items-center justify-center gap-2">
+          ✨ TẠO STICKER DOODLE (AI)
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: WAITING / LOADING AI ANIMATION ================= -->
+    <div id="modal-loading-ai" class="absolute inset-0 bg-white/90 z-50 hidden flex flex-col items-center justify-center p-6 text-center space-y-4">
+      <div class="w-24 h-24 bg-amber-50 rounded-3xl border-2 border-zinc-900 flex items-center justify-center text-4xl shadow-[4px_4px_0px_#000] animate-bounce">
+        ✏️
+      </div>
+      <div class="space-y-1">
+        <h3 class="font-extrabold text-base font-doodle">AI đang phác thảo nét vẽ...</h3>
+        <p class="text-xs text-zinc-500 max-w-[220px]">Đang trích xuất ngữ nghĩa và bóc tách viền sticker (khoảng 3 - 5s)</p>
+      </div>
+      <div class="w-48 h-2 bg-zinc-200 rounded-full overflow-hidden border border-zinc-800">
+        <div class="h-full bg-emerald-500 animate-pulse w-3/4"></div>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: ERROR / FALLBACK STICKER PICKER ================= -->
+    <div id="modal-fallback" class="absolute inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl border-2 border-zinc-900 p-5 space-y-3 max-w-[320px] shadow-[4px_4px_0px_#000]">
+        <div class="flex items-center gap-2 text-amber-600 font-bold text-sm">
+          <span>⚠️</span> Kết nối AI gián đoạn
+        </div>
+        <p class="text-xs text-zinc-600">
+          Nhật ký của bạn đã được lưu! Hãy chọn 1 sticker vẽ tay có sẵn từ bộ sưu tập dự phòng:
+        </p>
+        <div class="grid grid-cols-3 gap-2 py-2">
+          <button onclick="selectFallbackSticker('☕')" class="p-2 border-2 border-zinc-800 rounded-xl text-2xl hover:bg-amber-100 shadow-[1px_1px_0px_#000]">☕</button>
+          <button onclick="selectFallbackSticker('🚲')" class="p-2 border-2 border-zinc-800 rounded-xl text-2xl hover:bg-sky-100 shadow-[1px_1px_0px_#000]">🚲</button>
+          <button onclick="selectFallbackSticker('🍕')" class="p-2 border-2 border-zinc-800 rounded-xl text-2xl hover:bg-rose-100 shadow-[1px_1px_0px_#000]">🍕</button>
+          <button onclick="selectFallbackSticker('🐱')" class="p-2 border-2 border-zinc-800 rounded-xl text-2xl hover:bg-emerald-100 shadow-[1px_1px_0px_#000]">🐱</button>
+          <button onclick="selectFallbackSticker('📚')" class="p-2 border-2 border-zinc-800 rounded-xl text-2xl hover:bg-purple-100 shadow-[1px_1px_0px_#000]">📚</button>
+          <button onclick="selectFallbackSticker('🌙')" class="p-2 border-2 border-zinc-800 rounded-xl text-2xl hover:bg-indigo-100 shadow-[1px_1px_0px_#000]">🌙</button>
+        </div>
+        <button onclick="document.getElementById('modal-fallback').classList.add('hidden')" class="w-full py-2 bg-zinc-200 text-zinc-700 text-xs font-bold rounded-lg">Đóng</button>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: QUOTA LIMIT ================= -->
+    <div id="modal-quota" class="absolute inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl border-2 border-zinc-900 p-5 space-y-3 max-w-[320px] shadow-[4px_4px_0px_#000] text-center">
+        <div class="text-3xl">🚫</div>
+        <h3 class="font-bold text-sm text-zinc-900">Đã dùng hết 5/5 lượt hôm nay</h3>
+        <p class="text-xs text-zinc-500">
+          Hạn mức AI sẽ làm mới vào 00:00 (Asia/Ho_Chi_Minh). Bạn vẫn có thể lưu nhật ký kèm sticker có sẵn!
+        </p>
+        <button onclick="document.getElementById('modal-quota').classList.add('hidden')" class="w-full py-2 bg-zinc-900 text-white text-xs font-bold rounded-xl doodle-btn">
+          Đã hiểu
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: DELETE CONFIRMATION ================= -->
+    <div id="modal-delete" class="absolute inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl border-2 border-zinc-900 p-5 space-y-3 max-w-[320px] shadow-[4px_4px_0px_#000]">
+        <div class="flex items-center gap-2 text-red-600 font-bold text-sm">
+          <span>🗑️</span> Xác nhận xóa nhật ký?
+        </div>
+        <p class="text-xs text-zinc-600">
+          Toàn bộ ghi chép và các sticker của Ngày 06/11 sẽ bị gỡ khỏi Timeline. Hành động này không thể hoàn tác!
+        </p>
+        <div class="flex gap-2 pt-1">
+          <button onclick="document.getElementById('modal-delete').classList.add('hidden')" class="flex-1 py-2 bg-zinc-100 text-zinc-700 text-xs font-bold rounded-lg border border-zinc-300">
+            Giữ lại
+          </button>
+          <button onclick="executeDelete()" class="flex-1 py-2 bg-red-600 text-white text-xs font-bold rounded-lg border border-zinc-900 shadow">
+            Xóa vĩnh viễn
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Interaction Logic -->
+  <script>
+    let currentMood = 'happy';
+    let quotaCount = 4;
+
+    function navigate(screenId) {
+      document.querySelectorAll('.screen-view').forEach(s => s.classList.add('hidden'));
+      const target = document.getElementById(screenId);
+      if (target) {
+        target.classList.remove('hidden');
+      }
+    }
+
+    function loginSuccess() {
+      navigate('screen-timeline');
+    }
+
+    function openCheckinModal(timeOfDay) {
+      const badge = document.getElementById('form-time-badge');
+      if (timeOfDay === 'morning') badge.innerText = '☀️ Buổi sáng';
+      else if (timeOfDay === 'afternoon') badge.innerText = '🌤️ Buổi trưa/chiều';
+      else badge.innerText = '🌙 Buổi tối';
+
+      document.getElementById('modal-checkin').classList.remove('hidden');
+      document.getElementById('moment-input').focus();
+    }
+
+    function closeCheckinModal() {
+      document.getElementById('modal-checkin').classList.add('hidden');
+    }
+
+    function updateCharCount() {
+      const val = document.getElementById('moment-input').value;
+      document.getElementById('char-counter').innerText = val.length + '/300 ký tự';
+    }
+
+    function pickMood(btn, mood) {
+      currentMood = mood;
+      document.querySelectorAll('.mood-btn').forEach(b => {
+        b.className = 'mood-btn py-1.5 px-2 rounded-lg border border-zinc-300 bg-white text-xs flex items-center justify-center gap-1';
+      });
+      btn.className = 'mood-btn py-1.5 px-2 rounded-lg border-2 border-zinc-800 bg-amber-100 font-bold text-xs flex items-center justify-center gap-1 shadow-[1px_1px_0px_#000]';
+    }
+
+    function submitMoment() {
+      const text = document.getElementById('moment-input').value.trim();
+      if (!text) {
+        alert('Vui lòng nhập vài dòng ghi chép cho khoảnh khắc này!');
+        return;
+      }
+      closeCheckinModal();
+
+      // Show AI Loading Animation
+      const loader = document.getElementById('modal-loading-ai');
+      loader.classList.remove('hidden');
+
+      setTimeout(() => {
+        loader.classList.add('hidden');
+        quotaCount--;
+        document.getElementById('quota-badge').innerText = `Quota: ${quotaCount}/5`;
+        
+        // Update detail screen with newly generated moment
+        setPrimarySticker('🌙', text);
+        navigate('screen-detail');
+      }, 2000);
+    }
+
+    function setPrimarySticker(icon, caption) {
+      document.getElementById('detail-sticker-icon').innerText = icon;
+      document.getElementById('detail-sticker-caption').innerText = `"${caption}"`;
+      navigate('screen-detail');
+    }
+
+    function confirmDelete() {
+      document.getElementById('modal-delete').classList.remove('hidden');
+    }
+
+    function executeDelete() {
+      document.getElementById('modal-delete').classList.add('hidden');
+      alert('Đã xóa bài nhật ký!');
+      navigate('screen-timeline');
+    }
+
+    function simulateExportPNG() {
+      alert('Đã xuất thành công ảnh Story 9:16 (1080x1920) định dạng PNG vào máy của bạn!');
+    }
+
+    function selectFallbackSticker(icon) {
+      document.getElementById('modal-fallback').classList.add('hidden');
+      setPrimarySticker(icon, 'Khoảnh khắc chọn từ bộ sưu tập dự phòng');
+    }
+
+    function triggerEdgeState(state) {
+      if (state === 'empty') {
+        alert('Mô phỏng: User mới chưa có bài nào -> Hiển thị Empty Canvas với icon cuốn sổ và nút "Viết trang đầu tiên".');
+      } else if (state === 'quota') {
+        document.getElementById('modal-quota').classList.remove('hidden');
+      } else if (state === 'error') {
+        document.getElementById('modal-fallback').classList.remove('hidden');
+      }
+    }
+
+    // Auto set clock
+    setInterval(() => {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const clockEl = document.getElementById('device-clock');
+      if (clockEl) clockEl.innerText = `${h}:${m}`;
+    }, 1000);
+  </script>
+</body>
+</html>

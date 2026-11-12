@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
+import { useAuth } from './contexts/useAuth';
+import { BrowserTitlebar } from './components/layout/BrowserTitlebar';
 import { AppHeader, type ActiveSection } from './components/layout/AppHeader';
 import { BottomNav } from './components/layout/BottomNav';
 import { LandingSection } from './components/sections/LandingSection';
@@ -10,64 +12,85 @@ import { StickersSection } from './components/sections/StickersSection';
 import { QuotaModal } from './components/modals/QuotaModal';
 import { AuthModal } from './components/modals/AuthModal';
 
-export function App() {
-  const [activeSection, setActiveSection] = useState<ActiveSection>('landing');
+function MainApp() {
+  const { user } = useAuth();
+  const [selectedSection, setSelectedSection] = useState<ActiveSection>('checkin');
   const [isQuotaOpen, setIsQuotaOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
+  const activeSection: ActiveSection = !user ? 'landing' : selectedSection;
+
+  const handleStartWriting = () => {
+    if (!user) {
+      setIsAuthOpen(true);
+    } else {
+      setSelectedSection('checkin');
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    setIsAuthOpen(false);
+    setSelectedSection('checkin');
+  };
+
   return (
-    <AuthProvider>
-      <div className="min-h-screen flex flex-col bg-[#faf9f6] text-[#18181b] select-none">
-        {/* Application Navbar */}
-        <AppHeader
-          activeSection={activeSection}
-          onNavigate={(sec) => setActiveSection(sec)}
-          onOpenQuotaModal={() => setIsQuotaOpen(true)}
-          onOpenAuthModal={() => setIsAuthOpen(true)}
-        />
+    <div className="w-screen h-screen overflow-hidden flex flex-col bg-zinc-900 select-none text-zinc-900">
+      <BrowserTitlebar activeSection={activeSection} />
 
-        {/* Main Workspace Content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto flex flex-col justify-center relative pb-20 md:pb-6">
-          {activeSection === 'landing' && (
-            <LandingSection onStartWriting={() => setActiveSection('checkin')} />
-          )}
+      <AppHeader
+        activeSection={activeSection}
+        onNavigate={(sec) => setSelectedSection(sec)}
+        onOpenQuotaModal={() => setIsQuotaOpen(true)}
+        onOpenAuthModal={() => setIsAuthOpen(true)}
+      />
 
-          {activeSection === 'checkin' && (
-            <CheckinSection onGoToTimeline={() => setActiveSection('timeline')} />
-          )}
+      <main className="flex-1 bg-[#faf9f6] p-4 lg:p-6 overflow-hidden flex flex-col justify-center relative">
+        {activeSection === 'landing' && (
+          <LandingSection onStartWriting={handleStartWriting} />
+        )}
 
-          {activeSection === 'timeline' && (
-            <TimelineSection
-              onGoToCheckin={() => setActiveSection('checkin')}
-              onGoToRecap={() => setActiveSection('recap')}
-            />
-          )}
+        {activeSection === 'checkin' && (
+          <CheckinSection onGoToTimeline={() => setSelectedSection('timeline')} />
+        )}
 
-          {activeSection === 'recap' && (
-            <RecapSection onBackToTimeline={() => setActiveSection('timeline')} />
-          )}
+        {activeSection === 'timeline' && (
+          <TimelineSection
+            onGoToCheckin={() => setSelectedSection('checkin')}
+            onGoToRecap={() => setSelectedSection('recap')}
+          />
+        )}
 
-          {activeSection === 'stickers' && <StickersSection />}
-        </main>
+        {activeSection === 'recap' && (
+          <RecapSection onBackToTimeline={() => setSelectedSection('timeline')} />
+        )}
 
-        {/* Bottom Floating Navigation for Mobile */}
+        {activeSection === 'stickers' && <StickersSection />}
+      </main>
+
+      {user && activeSection !== 'landing' && (
         <BottomNav
           activeSection={activeSection}
-          onNavigate={(sec) => setActiveSection(sec)}
+          onNavigate={(sec) => setSelectedSection(sec)}
         />
+      )}
 
-        {/* Quota Modal */}
-        <QuotaModal
-          isOpen={isQuotaOpen}
-          onClose={() => setIsQuotaOpen(false)}
-        />
+      <QuotaModal
+        isOpen={isQuotaOpen}
+        onClose={() => setIsQuotaOpen(false)}
+      />
 
-        {/* Auth Modal (Google & Email/Password) */}
-        <AuthModal
-          isOpen={isAuthOpen}
-          onClose={() => setIsAuthOpen(false)}
-        />
-      </div>
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={handleAuthSuccess}
+      />
+    </div>
+  );
+}
+
+export function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
     </AuthProvider>
   );
 }

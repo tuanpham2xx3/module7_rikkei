@@ -1,0 +1,196 @@
+﻿STT,Ngày (*),Sprint,Tên task (*),Mô tả / yêu cầu,Điểm (*),Yêu cầu nộp,Bonus
+1,1,1,[A01] Chốt phạm vi MVP và hợp đồng API,"Mức: P0 / bắt buộc.
+Lịch: ngày 1–1; hạn hoàn thành ngày 1. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: Không. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Chốt 1 nhật ký/ngày, tối đa 300 ký tự, múi giờ Asia/Ho_Chi_Minh, timeline dọc và mốc 3/7/30 ngày tính từ ngày bắt đầu. Có ERD nháp, cấu trúc API và Definition of Done để cả nhóm cùng dùng.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+2,1,1,"[B01] Khởi tạo repository, CI và staging","Mức: P0 / bắt buộc.
+Lịch: ngày 1–1; hạn hoàn thành ngày 1. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: Không. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Ứng dụng chạy local và có URL staging. Có cấu hình môi trường mẫu không chứa secret, lint/build trong CI và quy ước PR/review. Khóa nhà cung cấp AI chỉ nằm phía server.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+3,1,1,[C01] Thử nghiệm API tạo ảnh và chọn nhà cung cấp,"Mức: P0 / bắt buộc.
+Lịch: ngày 1–1; hạn hoàn thành ngày 1. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: Không. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Thử 20 câu tiếng Việt đa dạng bằng ảnh thật. Ghi tỷ lệ tạo thành công, độ phù hợp, thời gian và chi phí thực tế. Chốt API, giới hạn thử nghiệm, khả năng chạy tác vụ nền và phương án dự phòng.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+4,2,1,[A02] Thiết kế giao diện và luồng sử dụng,"Mức: P0 / bắt buộc.
+Lịch: ngày 1–2; hạn hoàn thành ngày 2. Ước lượng: 8 giờ/người phụ trách.
+Phụ thuộc: A01. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Có thiết kế đăng nhập, viết nhật ký, timeline, chi tiết và tổng kết trên mobile/desktop. Bao gồm trạng thái trống, chờ AI, lỗi, quota và xác nhận xóa.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",8,Link,
+5,2,1,[B02] Thiết kế schema và migration dữ liệu,"Mức: P0 / bắt buộc.
+Lịch: ngày 2–2; hạn hoàn thành ngày 2. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: A01, B01. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Có users/profiles, entries, generation_jobs và metadata ảnh. Ràng buộc duy nhất theo user và ngày nhật ký; job có trạng thái, attempt, timestamps, provider reference và mã lỗi. Có migration chạy lại trên môi trường mới.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+6,2,1,[C02] Chuẩn hóa prompt và phong cách doodle,"Mức: P0 / bắt buộc.
+Lịch: ngày 2–2; hạn hoàn thành ngày 2. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: A01, C01. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Một prompt version có nét viền dày, bảng màu cố định và không yêu cầu chữ trong ảnh. Kiểm tra với 20 câu mẫu, ghi nhận trường hợp lệch ý. Nền đồng màu được chấp nhận; không phụ thuộc tách nền.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+7,3,1,[A03] Dựng khung ứng dụng và phiên đăng nhập,"Mức: P0 / bắt buộc.
+Lịch: ngày 3–3; hạn hoàn thành ngày 3. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: B01, A02. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Có layout, điều hướng, route cần đăng nhập và trạng thái khởi tạo phiên. Kết nối đăng nhập/đăng xuất với backend; không nháy nội dung riêng tư khi chưa xác định phiên.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+8,3,1,[B03] Triển khai đăng nhập và xác thực API,"Mức: P0 / bắt buộc.
+Lịch: ngày 3–3; hạn hoàn thành ngày 3. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: B02. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Dùng một phương thức đăng nhập bằng dịch vụ có sẵn, đăng xuất và khôi phục phiên. API lấy danh tính từ phiên đã xác thực, từ chối yêu cầu hết hạn/chưa đăng nhập; không tin user_id từ client.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+9,3,1,[C03] Xây dựng adapter gọi API tạo ảnh,"Mức: P0 / bắt buộc.
+Lịch: ngày 2–3; hạn hoàn thành ngày 3. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: B01, C02. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Server nhận nội dung đã kiểm tra và trả ảnh hoặc mã lỗi chuẩn. Tách cấu hình model/prompt khỏi UI; hỗ trợ kết quả tức thời hoặc tác vụ nền theo nhà cung cấp đã chọn. Không lộ khóa hoặc raw error nhạy cảm.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+10,4,1,[A04] Xây dựng form ghi nhật ký,"Mức: P0 / bắt buộc.
+Lịch: ngày 3–4; hạn hoàn thành ngày 4. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: A01, A03, B05. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Nhập 1–300 ký tự sau trim, báo lỗi tại trường, chống bấm gửi lặp. Lưu thành công trả mục nhật ký thật; lỗi mạng giữ bản nháp trong phiên để người dùng thử lại.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+11,4,1,[B04] Thiết lập quyền truy cập dữ liệu và ảnh,"Mức: P0 / bắt buộc.
+Lịch: ngày 4–4; hạn hoàn thành ngày 4. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: B03, C04. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Bật quyền theo chủ sở hữu cho dữ liệu và private storage. Tài khoản A không đọc/xóa nhật ký hoặc ảnh của B dù biết ID/path. Ảnh được truy cập qua URL có thời hạn. Có kiểm thử hai tài khoản.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+12,4,1,[C04] Lưu ảnh vào storage riêng tư,"Mức: P0 / bắt buộc.
+Lịch: ngày 3–4; hạn hoàn thành ngày 4. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: B02, C03. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Lưu ảnh bền vững và metadata theo owner/entry, kiểm tra MIME/kích thước, không chỉ lưu URL tạm của nhà cung cấp. Trả URL truy cập có thời hạn; cấu hình CORS để xuất ảnh được.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+13,5,1,[A05] Hiển thị tiến trình tạo sticker,"Mức: P0 / bắt buộc.
+Lịch: ngày 4–5; hạn hoàn thành ngày 5. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: A04, C05. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Hiển thị queued/processing/succeeded/failed từ API, không giả lập thành công. Tải lại trang truy xuất trạng thái đã lưu. Cho xem ảnh sau thành công, báo lỗi và hướng dẫn khi chưa có ảnh.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+14,5,1,"[B05] Xây dựng API tạo, đọc và xóa nhật ký","Mức: P0 / bắt buộc.
+Lịch: ngày 4–5; hạn hoàn thành ngày 5. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: B02, B03. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Server kiểm tra 1–300 ký tự và ngày theo múi giờ đã chốt, trả lỗi rõ khi trùng ngày. Hỗ trợ tạo, chi tiết, danh sách cơ bản và xóa đúng chủ. Xóa mục phải loại ảnh khỏi quyền truy cập và không để job đang chạy khôi phục mục đã xóa.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+15,5,1,[C05] Tích hợp luồng nhật ký đến sticker thật,"Mức: P0 / bắt buộc.
+Lịch: ngày 4–5; hạn hoàn thành ngày 5. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: A04, B05, C03, C04. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Có tác vụ tạo ảnh tối giản chạy trên staging theo cơ chế nền đã xác minh ở C01. Một nhật ký thật tạo được ảnh và lưu liên kết; tải lại vẫn thấy kết quả. Khi AI lỗi nhật ký vẫn tồn tại. Chuyển tiếp cơ chế này cho B06/B07 để hoàn thiện tuần 2.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+16,7,2,[A06] Xây dựng Journey Timeline và tải thêm,"Mức: P0 / bắt buộc.
+Lịch: ngày 6–7; hạn hoàn thành ngày 7. Ước lượng: 8 giờ/người phụ trách.
+Phụ thuộc: A05, B05. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Sắp xếp theo ngày bằng quy tắc cố định, sticker xen kẽ và có đường nối. Theo contract cursor thống nhất với B ngày 6, kiểm tra component bằng 100 mục mock: tải theo lô, chống trùng, không render toàn bộ lịch sử. Nối API phân trang thật sau B09 trong A11.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",8,Link,
+17,7,2,[B06] Hoàn thiện vòng đời job và chống yêu cầu trùng,"Mức: P0 / bắt buộc.
+Lịch: ngày 6–7; hạn hoàn thành ngày 7. Ước lượng: 8 giờ/người phụ trách.
+Phụ thuộc: B05, C05. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Tạo entry/job nhất quán, dùng idempotency key và ràng buộc DB để chặn gửi lặp. Endpoint đọc trạng thái kiểm tra owner. Có kiểm thử hai yêu cầu đồng thời không tạo thêm entry hoặc hai job cho cùng một yêu cầu.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",8,Link,
+18,7,2,[C06] Xử lý timeout và lỗi từ nhà cung cấp AI,"Mức: P0 / bắt buộc.
+Lịch: ngày 6–7; hạn hoàn thành ngày 7. Ước lượng: 8 giờ/người phụ trách.
+Phụ thuộc: C03, C05. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Phân loại lỗi tạm thời, lỗi đầu vào/từ chối và kết quả không xác định. Adapter trả retry hint cùng provider reference nếu có; chỉ worker điều phối retry để tránh retry chồng lớp. Có kiểm thử giả lập timeout, rate limit và ảnh không hợp lệ.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",8,Link,
+19,8,2,[A07] Hoàn thiện xem chi tiết và xóa nhật ký,"Mức: P0 / bắt buộc.
+Lịch: ngày 8–8; hạn hoàn thành ngày 8. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: A06, B05. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Xem nội dung, ngày, sticker và trạng thái job thật. Xóa có xác nhận, cập nhật timeline sau thành công; lỗi xóa không làm mất mục trên UI. Hết phiên chuyển về đăng nhập.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+20,8,2,[B07] Hoàn thiện worker và phục hồi tác vụ,"Mức: P0 / bắt buộc.
+Lịch: ngày 7–8; hạn hoàn thành ngày 8. Ước lượng: 8 giờ/người phụ trách.
+Phụ thuộc: B06, C06. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Worker nhận job bằng cập nhật có điều kiện, giới hạn concurrency và lưu trạng thái trước/sau gọi provider. Có timeout, retry/backoff giới hạn và xử lý job bị treo. Dùng provider reference khi hỗ trợ; không tự retry trường hợp chưa rõ provider đã tính phí hay chưa.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",8,Link,
+21,8,2,[C07] Thêm bộ sticker dự phòng,"Mức: P0 / bắt buộc.
+Lịch: ngày 8–8; hạn hoàn thành ngày 8. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: A05, C06. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Có ít nhất 6 sticker được phép sử dụng. Người dùng chọn thủ công khi tạo ảnh lỗi/bị từ chối. Lựa chọn được lưu, không ghi đè ảnh thành công và không làm mất nội dung nhật ký.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+22,9,2,"[A08] Hoàn thiện UX cho lỗi, quota và responsive","Mức: P0 / bắt buộc.
+Lịch: ngày 9–9; hạn hoàn thành ngày 9. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: A07, B08, C07. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Hiển thị quota thật, thử lại khi đủ điều kiện và chọn sticker dự phòng. Dừng polling khi hoàn thành/rời trang. Form có label, focus và thao tác bàn phím; kiểm tra chiều rộng 360px, 768px và desktop.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+23,9,2,[B08] Áp dụng quota và retry có kiểm soát,"Mức: P0 / bắt buộc.
+Lịch: ngày 9–9; hạn hoàn thành ngày 9. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: B07. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Quota cấu hình theo tài khoản/ngày và cập nhật nguyên tử để tránh vượt hạn mức khi gửi đồng thời. Phân biệt retry hệ thống và lượt người dùng. Trả số lượt còn lại, báo lỗi rõ; log chỉ chứa ID/trạng thái/thời lượng/usage, không có nội dung nhật ký.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+24,9,2,[C08] Xây dựng API mốc và dữ liệu tổng kết,"Mức: P0 / bắt buộc.
+Lịch: ngày 8–9; hạn hoàn thành ngày 9. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: B05, B03. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Mốc 3/7/30 tính theo ngày địa phương từ ngày bắt đầu hành trình, không yêu cầu streak. Kiểm tra khi mở ứng dụng, không có cron. Trả dữ liệu của khoảng được chọn và tối đa 9 sticker theo quy tắc cố định; không gọi AI tạo lại. Kiểm thử ranh giới ngày và khoảng trống.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+25,10,2,[A09] Xây dựng màn hình Memory Recap,"Mức: P0 / bắt buộc.
+Lịch: ngày 9–10; hạn hoàn thành ngày 10. Ước lượng: 8 giờ/người phụ trách.
+Phụ thuộc: A06, C08, C09. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Hiển thị mốc khả dụng, khoảng ngày và bản xem trước dùng cùng bố cục với ảnh xuất. Cho bật/tắt nội dung chữ, mặc định tắt. Không đưa mục ngoài khoảng hoặc ảnh không được phép truy cập vào tổng kết.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",8,Link,
+26,10,2,[B09] Hoàn thiện API timeline phân trang,"Mức: P0 / bắt buộc.
+Lịch: ngày 6–10; hạn hoàn thành ngày 10. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: B05. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Thống nhất response với A từ ngày 6. Sắp xếp ổn định theo ngày và ID, dùng cursor và giới hạn kích thước lô. Kiểm thử 100 mục, không thiếu/trùng giữa trang, chỉ trả dữ liệu của owner.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+27,10,2,[C09] Xuất ảnh tổng kết PNG,"Mức: P0 / bắt buộc.
+Lịch: ngày 8–10; hạn hoàn thành ngày 10. Ước lượng: 10 giờ/người phụ trách.
+Phụ thuộc: C04, C08. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Xuất PNG 1080×1920 với tối đa 9 sticker, ngày và chữ tiếng Việt theo template cố định. Ảnh tải đủ trước khi xuất, không lỗi CORS; giới hạn chữ không tràn. Hoạt động trên hai trình duyệt đã chọn và ảnh từ private storage thật.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",8,Link,
+28,12,3,[A10] Thử nghiệm luồng chính với 5 người,"Mức: P0 / bắt buộc.
+Lịch: ngày 11–12; hạn hoàn thành ngày 12. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: A09, B08, C09. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Ghi số người tự hoàn thành viết → sticker → timeline → tải tổng kết, vấn đề và thời gian quan sát thực tế. Mục tiêu 4/5 hoàn thành không cần hướng dẫn. Không tự điền kết quả đạt; lập danh sách lỗi theo mức ảnh hưởng.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+29,12,3,[B10] Kiểm thử phân quyền và tính đúng đắn backend,"Mức: P0 / bắt buộc.
+Lịch: ngày 11–12; hạn hoàn thành ngày 12. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: B07, B08, B09. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Kiểm tra truy cập chéo hai tài khoản, trùng ngày, gửi đồng thời, quota, job lỗi, xóa khi đang tạo và phiên hết hạn. Test tích hợp có assertion kết quả DB/storage; các lỗi chặn luồng được tạo issue.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+30,12,3,"[C10] Kiểm thử AI, tổng kết và đo chi phí","Mức: P0 / bắt buộc.
+Lịch: ngày 11–12; hạn hoàn thành ngày 12. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: C06, C07, C09. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Kiểm thử API thật với ngân sách giới hạn và mock lỗi để kiểm tra timeout/rate limit/từ chối. Seed mốc 3/7/30 ngày. Báo cáo tỷ lệ thành công, thời gian và chi phí từ số liệu đo; lưu bộ test có thể chạy lại.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+31,14,3,[A11] Sửa lỗi UX và hoàn thiện frontend,"Mức: P0 / bắt buộc.
+Lịch: ngày 13–14; hạn hoàn thành ngày 14. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: A10, B09. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Hoàn tất tích hợp timeline với API phân trang B09 nếu còn phần chưa nối từ A06. Ưu tiên lỗi mất nội dung, không thao tác được hoặc không xuất ảnh. Kiểm tra lại loading/empty/error, responsive và tải thêm dữ liệu thật. Cuối ngày 14 không còn lỗi frontend chặn demo; không thêm P1.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+32,14,3,[B11] Triển khai bản demo và kiểm tra vận hành,"Mức: P0 / bắt buộc.
+Lịch: ngày 13–14; hạn hoàn thành ngày 14. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: B10, C10. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Triển khai web và worker trên môi trường đã chọn, cấu hình secret/quota/storage đúng. Smoke test từ đăng nhập đến tải PNG, kiểm tra job sau tải lại trang và log đã ẩn dữ liệu. Ghi cách xem lỗi, phục hồi và rollback bản triển khai.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+33,14,3,[C11] Sửa lỗi pipeline ảnh và xuất PNG,"Mức: P0 / bắt buộc.
+Lịch: ngày 13–14; hạn hoàn thành ngày 14. Ước lượng: 6 giờ/người phụ trách.
+Phụ thuộc: A10, C10. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Sửa lỗi AI/media được ưu tiên, kiểm tra lại bằng ảnh thật. Demo được ảnh lỗi hoặc quá hạn, dữ liệu tổng kết ít/nhiều mục và fallback. Không còn lỗi media chặn luồng chính trên hai trình duyệt đã chọn.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",5,Link,
+34,15,3,[A12] Viết case study và ghi đóng góp frontend,"Mức: P0 / bắt buộc.
+Lịch: ngày 15–15; hạn hoàn thành ngày 15. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: A11. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Có mô tả vấn đề, ảnh giao diện, luồng người dùng, quyết định UX, phản hồi thử nghiệm và thay đổi đã thực hiện. README liên kết live demo và ghi rõ đóng góp A bằng PR; không nêu số liệu chưa đo.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+35,15,3,[B12] Hoàn thiện README và tài liệu kiến trúc,"Mức: P0 / bắt buộc.
+Lịch: ngày 15–15; hạn hoàn thành ngày 15. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: B11. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Có sơ đồ hệ thống, ERD, API, cách chạy local/migration/worker, biến môi trường mẫu và test. Giải thích idempotency, phân quyền, retry, quota và giới hạn đã biết. Ghi rõ đóng góp B bằng PR.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+36,15,3,[C12] Chuẩn bị video và kịch bản demo cuối,"Mức: P0 / bắt buộc.
+Lịch: ngày 15–15; hạn hoàn thành ngày 15. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: A12, B12, C11. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Video 2–3 phút thể hiện luồng chính, tải lại khi đang tạo, fallback và tổng kết. Tài khoản/dữ liệu demo không chứa nhật ký cá nhân thật. Ghi đóng góp C, số liệu AI thực đo và hướng phát triển tiếp.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,
+37,15,3,[AX1] Thêm gợi ý viết khi chưa biết bắt đầu,"Mức: P1 / tùy chọn.
+Lịch: ngày 14–15; hạn hoàn thành ngày 15. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: A11. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Chỉ làm khi P0 đã hoàn tất và nhóm còn giờ dự phòng. Có 5–10 gợi ý tĩnh tiếng Việt, chọn gợi ý không ghi đè nội dung đã nhập. Không phát sinh lượt gọi AI.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,x
+38,15,3,[BX1] Thêm endpoint tổng hợp chỉ số vận hành,"Mức: P1 / tùy chọn.
+Lịch: ngày 14–15; hạn hoàn thành ngày 15. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: B11. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Chỉ làm khi P0 đã hoàn tất và nhóm còn giờ dự phòng. Endpoint được bảo vệ trả số job theo trạng thái, thời gian và usage tổng hợp. Không trả nội dung nhật ký, khóa API hoặc dữ liệu của người dùng khác cho tài khoản thường.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,x
+39,15,3,[CX1] Thêm template tổng kết thứ hai,"Mức: P1 / tùy chọn.
+Lịch: ngày 14–15; hạn hoàn thành ngày 15. Ước lượng: 4 giờ/người phụ trách.
+Phụ thuộc: C11. Các ID là tham chiếu mô tả, không tự tạo quan hệ trên hệ thống.
+Nghiệm thu: Chỉ làm khi P0 đã hoàn tất và nhóm còn giờ dự phòng. Có lựa chọn template, preview khớp ảnh xuất và không thay đổi dữ liệu nguồn. Kiểm tra tiếng Việt, tối đa 9 sticker và xuất PNG đúng kích thước.
+Minh chứng: link PR/code kèm ảnh, test hoặc tài liệu phù hợp; không nộp secret. Task code cần CI pass và ít nhất một thành viên khác review.",3,Link,x

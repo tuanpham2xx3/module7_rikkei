@@ -1,4 +1,5 @@
 import React from 'react';
+import { Zap, Sparkles, Trophy, ArrowRight } from 'lucide-react';
 
 interface LandingSectionProps {
   onStartWriting: () => void;
@@ -7,7 +8,6 @@ interface LandingSectionProps {
 export const LandingSection: React.FC<LandingSectionProps> = ({ onStartWriting }) => {
   return (
     <section className="h-full max-w-5xl mx-auto w-full flex flex-col justify-between py-2 space-y-6">
-      {/* Hero Top Section */}
       <div className="text-center space-y-3 pt-2">
         <div className="inline-block px-4 py-1.5 rounded-full bg-amber-100 border-2 border-zinc-900 text-xs font-black text-zinc-900 uppercase tracking-widest shadow-sm">
           DOODLELIFE — NHẬT KÝ TRỰC QUAN TÍCH HỢP AI
@@ -20,15 +20,13 @@ export const LandingSection: React.FC<LandingSectionProps> = ({ onStartWriting }
         </p>
       </div>
 
-      {/* Feature Grid: 3 Cột Card có ĐỘ SÂU (DEPTH) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-auto">
-        {/* Feature 1 */}
         <div 
           onClick={onStartWriting}
           className="bg-white doodle-card-depth p-6 space-y-3 cursor-pointer"
         >
-          <div className="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
-            ⚡
+          <div className="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-zinc-900 flex items-center justify-center shadow-[2px_2px_0px_#000]">
+            <Zap className="w-6 h-6 text-zinc-900 stroke-[2.2]" />
           </div>
           <h3 className="text-base lg:text-lg font-black text-zinc-900 tracking-tight">
             Check-in Siêu Tốc &lt; 60s
@@ -38,13 +36,12 @@ export const LandingSection: React.FC<LandingSectionProps> = ({ onStartWriting }
           </p>
         </div>
 
-        {/* Feature 2 */}
         <div 
           onClick={onStartWriting}
           className="bg-white doodle-card-depth p-6 space-y-3 cursor-pointer"
         >
-          <div className="w-12 h-12 rounded-2xl bg-sky-100 border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
-            🎨
+          <div className="w-12 h-12 rounded-2xl bg-sky-100 border-2 border-zinc-900 flex items-center justify-center shadow-[2px_2px_0px_#000]">
+            <Sparkles className="w-6 h-6 text-zinc-900 stroke-[2.2]" />
           </div>
           <h3 className="text-base lg:text-lg font-black text-zinc-900 tracking-tight">
             Cloudflare AI Stickers
@@ -54,13 +51,12 @@ export const LandingSection: React.FC<LandingSectionProps> = ({ onStartWriting }
           </p>
         </div>
 
-        {/* Feature 3 */}
         <div 
           onClick={onStartWriting}
           className="bg-white doodle-card-depth p-6 space-y-3 cursor-pointer"
         >
-          <div className="w-12 h-12 rounded-2xl bg-purple-100 border-2 border-zinc-900 flex items-center justify-center text-2xl shadow-[2px_2px_0px_#000]">
-            🏆
+          <div className="w-12 h-12 rounded-2xl bg-purple-100 border-2 border-zinc-900 flex items-center justify-center shadow-[2px_2px_0px_#000]">
+            <Trophy className="w-6 h-6 text-zinc-900 stroke-[2.2]" />
           </div>
           <h3 className="text-base lg:text-lg font-black text-zinc-900 tracking-tight">
             Memory Recap 9:16 Story
@@ -71,7 +67,6 @@ export const LandingSection: React.FC<LandingSectionProps> = ({ onStartWriting }
         </div>
       </div>
 
-      {/* Bottom Hero CTA Bar */}
       <div className="bg-white doodle-card-depth p-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="flex -space-x-2">
@@ -106,7 +101,7 @@ export const LandingSection: React.FC<LandingSectionProps> = ({ onStartWriting }
           className="px-6 py-3 bg-zinc-900 text-white doodle-btn rounded-xl font-black text-sm flex items-center gap-2 cursor-pointer"
         >
           <span>Bắt đầu Ghi chép ngay</span>
-          <span>➔</span>
+          <ArrowRight className="w-4 h-4 stroke-[2.5]" />
         </button>
       </div>
     </section>
